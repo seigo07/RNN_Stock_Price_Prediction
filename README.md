@@ -1,10 +1,10 @@
 # Project
 
-Regression.
+Advanced Regression Techniques.
 
 ## Description
 
-Regression.
+Advanced Regression Techniques.
 
 ## Getting Started
 
@@ -16,5 +16,5 @@ Regression.
 
 * Please run the following command
 ```
-cd Regression
+cd Advanced_Regression_Techniques
 ```
