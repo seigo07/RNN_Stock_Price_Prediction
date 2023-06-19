@@ -29,7 +29,6 @@ jobs:
           pip install -r requirements.txt
       - name: Run linting
         run:
-#          pip install flake8
           flake8 src/sample.py
 #      - name: Run Python
 #        run:
