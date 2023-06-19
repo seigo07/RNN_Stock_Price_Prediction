@@ -1,9 +1,13 @@
 name: Action
 
 on:
+#  pull_request:
+#    types:
+#      - opened
   push:
     branches:
-      - main
+#      - main
+      - feature/cicd
   workflow_dispatch:
 
 jobs:
