@@ -1,4 +1,5 @@
 numpy >= 1.2
+pylint >= 2.16.2
 matplotlib >= 3.7
 yfinance >= 0.2
 sklearn >= 0.0
