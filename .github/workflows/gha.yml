@@ -1,16 +1,16 @@
 name: Action
 
-on: [push, pull_request]
+#on: [push, pull_request]
 
-#on:
-#  pull_request:
-#    types:
-#      - opened
-#  push:
-#    branches:
-#      - main
-#      - feature/cicd
-#  workflow_dispatch:
+on:
+  pull_request:
+    types:
+      - opened
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
 
 jobs:
   lint-check:
