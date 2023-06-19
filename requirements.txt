@@ -1,0 +1,6 @@
+numpy >= 1.2
+matplotlib >= 3.7
+yfinance >= 0.2
+sklearn >= 0.0
+tensorflow >= 2.12
+keras >= 2.12.0
