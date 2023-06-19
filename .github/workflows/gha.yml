@@ -1,17 +1,19 @@
 name: Action
 
-on:
+on: [push, pull_request]
+
+#on:
 #  pull_request:
 #    types:
 #      - opened
-  push:
-    branches:
+#  push:
+#    branches:
 #      - main
-      - feature/cicd
-  workflow_dispatch:
+#      - feature/cicd
+#  workflow_dispatch:
 
 jobs:
-  numpy-test:
+  lint-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,7 +24,11 @@ jobs:
           architecture: 'x64'
       - name: Get Python version
         run: python -V
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run Python
-        run: python src/python-sample.py
+#      - name: Install dependencies
+#        run: pip install -r requirements.txt
+#      - name: Run Python
+#        run: python src/python-sample.py
+      - name: Run linting
+        run: |
+          pip install pylint
+          pylint sample.py
