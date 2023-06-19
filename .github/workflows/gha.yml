@@ -30,6 +30,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run linting
         run: |
+          pip install pylint
           pylint src/sample.py
 #      - name: Run Python
 #        run: python src/python-sample.py
