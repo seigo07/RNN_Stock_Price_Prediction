@@ -31,4 +31,4 @@ jobs:
       - name: Run linting
         run: |
           pip install pylint
-          pylint sample.py
+          pylint src/sample.py
