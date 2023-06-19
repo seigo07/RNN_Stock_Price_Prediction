@@ -24,8 +24,8 @@ jobs:
           architecture: 'x64'
       - name: Get Python version
         run: python -V
-#      - name: Install dependencies
-#        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 #      - name: Run Python
 #        run: python src/python-sample.py
       - name: Run linting
