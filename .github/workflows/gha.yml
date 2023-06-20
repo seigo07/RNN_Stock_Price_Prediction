@@ -1,0 +1,25 @@
+name: Action
+
+on: [push]
+
+jobs:
+  lint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Get Python version
+        run: python -V
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run linting
+        run:
+          flake8 src/sample.py
+#      - name: Run Python
+#        run:
+#          python src/python-sample.py
