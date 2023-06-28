@@ -32,7 +32,7 @@ dataset
 
 
 # Preprocess the data
-data = dataset["Close"].values.reshape(-1, 1)
+data = dataset['Close'].values.reshape(-1, 1)
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaled_data = scaler.fit_transform(data)
 
@@ -47,7 +47,7 @@ def create_sequences(data, seq_length):
     X = []
     y = []
     for i in range(len(data) - seq_length):
-        X.append(data[i : i + seq_length])
+        X.append(data[i:i + seq_length])
         y.append(data[i + seq_length])
     return np.array(X), np.array(y)
 
@@ -83,13 +83,11 @@ print(f"R2: {arima_r2}")
 
 # Plot the actual and predicted values
 plt.figure(figsize=(12, 6))
-plt.plot(dataset.index[train_size:], test_data, label="Actual")
-plt.plot(
-    dataset.index[train_size:], arima_predictions, label="ARIMA Prediction"
-)
-plt.title("ARIMA Model - Actual vs Predicted")
-plt.xlabel("Date")
-plt.ylabel("Closing Price")
+plt.plot(dataset.index[train_size:], test_data, label='Actual')
+plt.plot(dataset.index[train_size:], arima_predictions, label='ARIMA Prediction')
+plt.title('ARIMA Model - Actual vs Predicted')
+plt.xlabel('Date')
+plt.ylabel('Closing Price')
 plt.legend()
 plt.show()
 
@@ -98,9 +96,9 @@ plt.show()
 
 # Build the LSTM model
 lstm_model = Sequential()
-lstm_model.add(LSTM(50, activation="relu", input_shape=(sequence_length, 1)))
+lstm_model.add(LSTM(50, activation='relu', input_shape=(sequence_length, 1)))
 lstm_model.add(Dense(1))
-lstm_model.compile(optimizer="adam", loss="mean_squared_error")
+lstm_model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Train the LSTM model
 lstm_model.fit(X_train, y_train, epochs=50, batch_size=16, verbose=0)
@@ -110,32 +108,20 @@ lstm_predictions = lstm_model.predict(X_test)
 lstm_predictions = scaler.inverse_transform(lstm_predictions.reshape(-1, 1))
 
 # Calculate indexes
-lstm_rmse = np.sqrt(
-    mean_squared_error(data[train_size + sequence_length :], lstm_predictions)
-)
-lstm_mae = mean_absolute_error(
-    data[train_size + sequence_length :], lstm_predictions
-)
-lstm_r2 = r2_score(data[train_size + sequence_length :], lstm_predictions)
+lstm_rmse = np.sqrt(mean_squared_error(data[train_size + sequence_length:], lstm_predictions))
+lstm_mae = mean_absolute_error(data[train_size + sequence_length:], lstm_predictions)
+lstm_r2 = r2_score(data[train_size + sequence_length:], lstm_predictions)
 print(f"RMSE: {lstm_rmse}")
 print(f"MAE: {lstm_mae}")
 print(f"R2: {lstm_r2}")
 
 # Plot the predictions
 plt.figure(figsize=(10, 6))
-plt.plot(
-    dataset.index[train_size + sequence_length :],
-    data[train_size + sequence_length :],
-    label="Actual",
-)
-plt.plot(
-    dataset.index[train_size + sequence_length :],
-    lstm_predictions,
-    label="LSTM Prediction",
-)
-plt.xlabel("Date")
-plt.ylabel("Index Value")
-plt.title(f"{ticker} Index Predictions")
+plt.plot(dataset.index[train_size + sequence_length:], data[train_size + sequence_length:], label='Actual')
+plt.plot(dataset.index[train_size + sequence_length:], lstm_predictions, label='LSTM Prediction')
+plt.xlabel('Date')
+plt.ylabel('Index Value')
+plt.title(f'{ticker} Index Predictions')
 plt.legend()
 plt.grid(True)
 plt.show()
@@ -145,9 +131,9 @@ plt.show()
 
 # Build the GRU model
 gru_model = Sequential()
-gru_model.add(GRU(50, activation="relu", input_shape=(sequence_length, 1)))
+gru_model.add(GRU(50, activation='relu', input_shape=(sequence_length, 1)))
 gru_model.add(Dense(1))
-gru_model.compile(optimizer="adam", loss="mean_squared_error")
+gru_model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Train the GRU model
 gru_model.fit(X_train, y_train, epochs=50, batch_size=16, verbose=0)
@@ -157,32 +143,20 @@ gru_predictions = gru_model.predict(X_test)
 gru_predictions = scaler.inverse_transform(gru_predictions.reshape(-1, 1))
 
 # Calculate indexes
-gru_rmse = np.sqrt(
-    mean_squared_error(data[train_size + sequence_length :], gru_predictions)
-)
-gru_mae = mean_absolute_error(
-    data[train_size + sequence_length :], gru_predictions
-)
-gru_r2 = r2_score(data[train_size + sequence_length :], gru_predictions)
+gru_rmse = np.sqrt(mean_squared_error(data[train_size + sequence_length:], gru_predictions))
+gru_mae = mean_absolute_error(data[train_size + sequence_length:], gru_predictions)
+gru_r2 = r2_score(data[train_size + sequence_length:], gru_predictions)
 print(f"RMSE: {gru_rmse}")
 print(f"MAE: {gru_mae}")
 print(f"R2: {gru_r2}")
 
 # Plot the predictions
 plt.figure(figsize=(10, 6))
-plt.plot(
-    dataset.index[train_size + sequence_length :],
-    data[train_size + sequence_length :],
-    label="Actual",
-)
-plt.plot(
-    dataset.index[train_size + sequence_length :],
-    gru_predictions,
-    label="GRU Prediction",
-)
-plt.xlabel("Date")
-plt.ylabel("Index Value")
-plt.title(f"{ticker} Index Predictions")
+plt.plot(dataset.index[train_size + sequence_length:], data[train_size + sequence_length:], label='Actual')
+plt.plot(dataset.index[train_size + sequence_length:], gru_predictions, label='GRU Prediction')
+plt.xlabel('Date')
+plt.ylabel('Index Value')
+plt.title(f'{ticker} Index Predictions')
 plt.legend()
 plt.grid(True)
 plt.show()
