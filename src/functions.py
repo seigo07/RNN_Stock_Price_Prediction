@@ -7,7 +7,8 @@ from keras.layers import LSTM, GRU, Dense
 from keras.models import Sequential
 from sklearn.model_selection import ParameterGrid, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
-
+from statsmodels.tsa.arima.model import ARIMA
+from itertools import product
 
 # Data Loading
 def load_data(ticker):
@@ -68,6 +69,43 @@ def build_model(algorithm, sequence_length, tf, lr, initializer='he_normal', los
     return model
 
 
+# Function to perform time series cross-validation
+def time_series_cross_validation(data, n_splits, model_order):
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+
+    theil_u_scores = []
+    for train_index, test_index in tscv.split(data):
+        train_data = data[train_index]
+        test_data = data[test_index]
+
+        # Preprocess the data
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        train_data = scaler.fit_transform(train_data)
+        test_data = scaler.transform(test_data)
+
+        # Reshape train_data and test_data to 2D arrays
+        train_data_2d = train_data.reshape(-1, 1)
+        test_data_2d = test_data.reshape(-1, 1)
+
+        history = [x for x in train_data_2d]
+        predictions = []
+        for t in range(len(test_data_2d)):
+            model = ARIMA(history, order=model_order)
+            model_fit = model.fit()
+            output = model_fit.forecast(steps=1)
+            yhat = output[0]
+            predictions.append(yhat)
+            obs = test_data_2d[t]
+            history.append(obs)
+
+        # Calculate Theil U
+        naive_predictions = np.full_like(test_data_2d, train_data_2d[-1])
+        theil_u = theil_u_statistic(test_data_2d, predictions, naive_predictions)
+        theil_u_scores.append(theil_u)
+
+    return np.mean(theil_u_scores)
+
+
 # Grid search for best hyperparameters using TimeSeriesSplit
 def get_best_params(algorithm, tf, sequence_length, scaler, X_train, y_train):
     # Define hyperparameter grid for grid search
@@ -110,6 +148,48 @@ def get_best_params(algorithm, tf, sequence_length, scaler, X_train, y_train):
     return best_params
 
 
+# Grid search for best ARIMA hyperparameters
+def get_best_params(data):
+    param_grid = {
+        'p': range(0, 3),  # Narrow the range for p
+        'd': range(1, 3),
+        'q': range(0, 2)  # Narrow the range for q
+    }
+
+    # Perform grid search with time series cross-validation
+    best_theil_u = float('inf')
+
+    for p, d, q in product(param_grid['p'], param_grid['d'], param_grid['q']):
+        model_order = (p, d, q)
+        theil_u_score = time_series_cross_validation(data, n_splits=5, model_order=model_order)
+
+        # Update best hyperparameters if Theil U improves
+        if theil_u_score < best_theil_u:
+            best_theil_u = theil_u_score
+            best_p, best_d, best_q = p, d, q
+
+    print(f"Best Parameters: p={best_p}, d={best_d}, q={best_q}")
+    return  best_theil_u, best_p, best_d, best_q
+
+
+def get_arima_predictions(scaler, train_data_2d, test_data_2d, best_p, best_d, best_q):
+    # Train the final model using the best hyperparameters
+    history = [x for x in train_data_2d]
+    best_predictions = []
+    for t in range(len(test_data_2d)):
+        model = ARIMA(history, order=(best_p, best_d, best_q))
+        model_fit = model.fit()
+        output = model_fit.forecast(steps=1)
+        yhat = output[0]
+        best_predictions.append(yhat)
+        obs = test_data_2d[t]
+        history.append(obs)
+    predictions = best_predictions
+    predictions = np.array(predictions).flatten()
+    predictions = scaler.inverse_transform(predictions.reshape(-1, 1)).flatten()
+    return predictions
+
+
 # Function to calculate Theil U statistic
 def theil_u_statistic(actual, predicted, naive):
     mse_actual = mean_squared_error(actual, naive)
@@ -133,6 +213,21 @@ def print_metrics(y_test, predictions, naive_predictions):
     print(f"Theil U statistic : {theil_u:.2f}")
 
 
+# Calculate each metrics for ARIMA
+def print_metrics(data, train_size, predictions, best_theil_u):
+    rmse = np.sqrt(mean_squared_error(data[train_size:], predictions))
+    mae = mean_absolute_error(data[train_size:], predictions)
+    r2 = r2_score(data[train_size:], predictions)
+    mape = mean_absolute_percentage_error(data[train_size:], predictions)
+
+    print(f"RMSE: {rmse}")
+    print(f"MAE: {mae}")
+    print(f"R2: {r2}")
+    print(f"MAPE: {mape:.2f}%")
+    print(f"Theil U statistic : {best_theil_u:.2f}")
+
+
+# Extract one year data
 def get_one_year_data(dataset, sequence_length, scaler, model):
     # Get data for the last one year
     one_year_ago = datetime.now() - timedelta(days=365)
@@ -152,6 +247,41 @@ def get_one_year_data(dataset, sequence_length, scaler, model):
     return one_year_data, one_year_data_2d, one_year_predictions
 
 
+# Extract one year data for ARIMA
+def get_one_year_data(dataset, scaler, train_data_2d):
+    # Get data for the last one year
+    one_year_ago = datetime.now() - timedelta(days=365)
+    one_year_data = dataset[dataset.index >= one_year_ago]
+
+    # Rescale the one-year data for plotting
+    one_year_data_scaled = scaler.transform(one_year_data['Close'].values.reshape(-1, 1))
+
+    # Reshape one_year_data_scaled to 2D array
+    one_year_data_2d = one_year_data_scaled.reshape(-1, 1)
+    one_year_2d = one_year_data['Close'].values.reshape(-1, 1)
+
+    # Reshape history to include one_year_data
+    history = train_data_2d.tolist() + one_year_data_2d.tolist()
+
+    # Predict using ARIMA model for the one-year period
+    one_year_predictions = []
+    for t in range(len(one_year_data_2d)):
+        model = ARIMA(history, order=(1, 2, 0))
+        model_fit = model.fit()
+        output = model_fit.forecast(steps=1)
+        yhat = output[0]
+        one_year_predictions.append(yhat)
+        obs = one_year_data_2d[t]
+        history.append(obs)
+
+    # Convert one_year_arima_predictions list to a 1D numpy array
+    one_year_predictions = np.array(one_year_predictions).flatten()
+    one_year_predictions = scaler.inverse_transform(one_year_predictions.reshape(-1, 1)).flatten()
+
+    return one_year_data, one_year_data_2d, one_year_2d, one_year_predictions
+
+
+# Simple Trading Strategy
 def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, sequence_length):
     # Initialize variables for the trading strategy for the one-year period
     initial_balance = 10000  # Initial balance (USD)
@@ -178,6 +308,34 @@ def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, 
     print(f"Profit or Loss: ${profit_or_loss:.2f}")
 
 
+# Simple Trading Strategy for ARIMA
+def print_trading_result(one_year_data, one_year_2d, one_year_predictions):
+    # Initialize variables for the trading strategy for the one-year period
+    initial_balance = 10000  # Initial balance (USD)
+    balance = initial_balance
+    stocks = 0
+    N = len(one_year_predictions)  # Use the one-year price direction data
+
+    # Implement the trading strategy for the one-year period
+    for i in range(N):
+        if one_year_predictions[i] > one_year_2d[i]:  # Predicted price will rise
+            stocks_to_buy = int(balance / one_year_data['Close'].iloc[i])
+            stocks += stocks_to_buy
+            balance -= stocks_to_buy * one_year_data['Close'].iloc[i]
+        else:  # Predicted price will fall
+            balance += stocks * one_year_data['Close'].iloc[i]
+            stocks = 0
+
+    # Calculate profit or loss at the end of the one-year period
+    final_balance = balance + stocks * one_year_data['Close'].iloc[-1]
+    profit_or_loss = final_balance - initial_balance
+
+    print(f"Initial Balance: ${initial_balance}")
+    print(f"Final Balance: ${final_balance:.2f}")
+    print(f"Profit or Loss: ${profit_or_loss:.2f}")
+
+
+# Plot trading result
 def plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_year_data_2d, one_year_predictions):
     # Plot the predictions with buy/sell points for the one-year period
     plt.figure(figsize=(10, 6))
@@ -188,6 +346,35 @@ def plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_y
     plt.scatter(one_year_data.index[sequence_length:], one_year_predictions, marker='o', color='g',
                 label='Buy' if one_year_predictions[-1] > one_year_data_2d[-1] else 'Sell')
 
+    plt.xlabel('Date')
+    plt.ylabel('Stock Price (USD)')
+    plt.title(f'{ticker} Stock Price Predictions with Buy/Sell Points (Last One Year)')
+    plt.legend()
+    plt.grid(True)
+
+    # Format x-axis ticks to show one month intervals
+    plt.gca().xaxis.set_major_locator(plt.matplotlib.dates.MonthLocator())
+    plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m'))
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Add more descriptive labels to the X and Y axes
+    plt.xlabel('Date')
+    plt.ylabel('Stock Price (USD)')
+
+    plt.show()
+
+
+# Plot trading result for ARIMA
+def plot_trading_result(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions):
+    # Plot the predictions with buy/sell points for the one-year period
+    plt.figure(figsize=(10, 6))
+
+    plt.plot(one_year_data.index, one_year_data['Close'].values, label='Actual Stock Price')
+    plt.plot(one_year_data.index, one_year_predictions, label=f'{algorithm} Predicted Stock Price')
+    plt.scatter(one_year_data.index, one_year_predictions, marker='o', color='g',
+                label='Buy' if one_year_predictions[-1] > one_year_2d[-1] else 'Sell')
     plt.xlabel('Date')
     plt.ylabel('Stock Price (USD)')
     plt.title(f'{ticker} Stock Price Predictions with Buy/Sell Points (Last One Year)')
