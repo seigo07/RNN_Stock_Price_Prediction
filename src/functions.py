@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from sklearn.preprocessing import MinMaxScaler
-from keras.layers import LSTM, Dense
+from keras.layers import LSTM, GRU, Dense
 from keras.models import Sequential
 from sklearn.model_selection import ParameterGrid, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
@@ -58,15 +58,13 @@ def build_model(algorithm, sequence_length, tf, lr, initializer='he_normal', los
     model = Sequential()
     if algorithm == "LSTM":
         model.add(LSTM(50, activation='tanh', recurrent_dropout=0, unroll=False, input_shape=(sequence_length, 1), kernel_initializer=initializer))
-        model.add(Dense(1))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(optimizer=optimizer, loss=loss_function)
+    elif algorithm == "GRU":
+        model.add(GRU(50, activation='tanh', recurrent_dropout=0, unroll=False, input_shape=(sequence_length, 1), kernel_initializer=initializer))
     else:
-        model.add(LSTM(50, activation='tanh', recurrent_dropout=0, unroll=False, input_shape=(sequence_length, 1),
-                       kernel_initializer=initializer))
-        model.add(Dense(1))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-        model.compile(optimizer=optimizer, loss=loss_function)
+        model.add(LSTM(50, activation='tanh', recurrent_dropout=0, unroll=False, input_shape=(sequence_length, 1), kernel_initializer=initializer))
+    model.add(Dense(1))
+    optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+    model.compile(optimizer=optimizer, loss=loss_function)
     return model
 
 
