@@ -149,7 +149,7 @@ def get_best_params(algorithm, tf, sequence_length, scaler, X_train, y_train):
 
 
 # Grid search for best ARIMA hyperparameters
-def get_best_params(data):
+def get_best_params_arima(data):
     param_grid = {
         'p': range(0, 3),  # Narrow the range for p
         'd': range(1, 3),
@@ -214,7 +214,7 @@ def print_metrics(y_test, predictions, naive_predictions):
 
 
 # Calculate each metrics for ARIMA
-def print_metrics(data, train_size, predictions, best_theil_u):
+def print_metrics_arima(data, train_size, predictions, best_theil_u):
     rmse = np.sqrt(mean_squared_error(data[train_size:], predictions))
     mae = mean_absolute_error(data[train_size:], predictions)
     r2 = r2_score(data[train_size:], predictions)
@@ -248,7 +248,7 @@ def get_one_year_data(dataset, sequence_length, scaler, model):
 
 
 # Extract one year data for ARIMA
-def get_one_year_data(dataset, scaler, train_data_2d):
+def get_one_year_data_arima(dataset, scaler, train_data_2d):
     # Get data for the last one year
     one_year_ago = datetime.now() - timedelta(days=365)
     one_year_data = dataset[dataset.index >= one_year_ago]
@@ -309,7 +309,7 @@ def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, 
 
 
 # Simple Trading Strategy for ARIMA
-def print_trading_result(one_year_data, one_year_2d, one_year_predictions):
+def print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions):
     # Initialize variables for the trading strategy for the one-year period
     initial_balance = 10000  # Initial balance (USD)
     balance = initial_balance
@@ -367,7 +367,7 @@ def plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_y
 
 
 # Plot trading result for ARIMA
-def plot_trading_result(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions):
+def plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions):
     # Plot the predictions with buy/sell points for the one-year period
     plt.figure(figsize=(10, 6))
 
