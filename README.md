@@ -19,9 +19,9 @@ ARIMA, LSTM, and GRU models are used as an algorithms.
 * Please run the following command
 
 ```
-cd Advanced_Regression_Techniques
-python3 src/performance.py <brand>
+cd RNN_Stock_Price_Prediction
+python3 src/lstm.py <ticker>
  
-<brand> : Specify one brand name you like,
+<ticker> : Specify one brand name you like,
 eg. GOOGL AAPL FB AMZN MSFT etc
 ```
