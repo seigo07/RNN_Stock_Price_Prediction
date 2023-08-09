@@ -10,6 +10,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, m
 from statsmodels.tsa.arima.model import ARIMA
 from itertools import product
 
+INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"
 
 def load_data(ticker):
     """
@@ -28,9 +29,12 @@ def load_data(ticker):
     # Set the start date for data collection as the same day and month but in the year 2020
     start = datetime(2020, end.month, end.day)
 
-    # Download stock data for the given ticker between the start and end dates using yfinance
+    # Download the stock data for the provided ticker symbol for a specified time frame
     dataset = yf.download(ticker, start, end)
 
+    # Validate if data for the provided ticker is available
+    if len(dataset) == 0:
+        exit(INVALID_TICKER_ERROR)
     return dataset
 
 
