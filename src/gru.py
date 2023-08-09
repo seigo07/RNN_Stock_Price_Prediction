@@ -81,7 +81,3 @@ plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_year_
 
 
 # In[75]:
-
-
-
-

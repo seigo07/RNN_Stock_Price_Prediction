@@ -70,7 +70,3 @@ plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_yea
 
 
 # In[ ]:
-
-
-
-
