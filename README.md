@@ -12,7 +12,7 @@ ARIMA, LSTM, and GRU models are used as an algorithms.
 
 ### Dependencies
 
-* Python Version: 3.9.16
+** Python Version: 3.9.16
 
 ### Executing program
 
