@@ -69,7 +69,7 @@ print_metrics_arima(data, train_size, predictions, best_theil_u)
 one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_year_data_arima(dataset, scaler, train_data_2d)
 
 # Calculate and display the trading outcomes based on the one-year predictions
-print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
+print_trading_result_arima(initial_balance, one_year_data, one_year_2d, one_year_predictions)
 
 # Visualize the trading results for a more intuitive understanding of performance
 plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions)

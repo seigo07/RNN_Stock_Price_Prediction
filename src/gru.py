@@ -80,7 +80,7 @@ print_metrics(y_test, predictions, naive_predictions)
 one_year_data, one_year_data_2d, one_year_predictions = get_one_year_data(dataset, sequence_length, scaler, model)
 
 # Display the trading results derived from one-year predictions
-print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, sequence_length)
+print_trading_result(initial_balance, one_year_data, one_year_data_2d, one_year_predictions, sequence_length)
 
 # Visualize the trading results for a comprehensive analysis
 plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_year_data_2d, one_year_predictions)

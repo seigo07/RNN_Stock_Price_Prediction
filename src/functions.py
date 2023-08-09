@@ -558,7 +558,7 @@ def get_one_year_data_arima(dataset, scaler, train_data_2d):
     return one_year_data, one_year_data_2d, one_year_2d, one_year_predictions
 
 
-def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, sequence_length):
+def print_trading_result(initial_balance, one_year_data, one_year_data_2d, one_year_predictions, sequence_length):
     """
     Simulates a trading strategy using predicted and actual data for one year and
     calculates the profit or loss made during the period.
@@ -574,7 +574,6 @@ def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, 
     """
 
     # Set initial trading parameters.
-    initial_balance = 10000
     balance = initial_balance
     stocks = 0
     N = len(one_year_predictions)
@@ -599,7 +598,7 @@ def print_trading_result(one_year_data, one_year_data_2d, one_year_predictions, 
     print(f"Profit or Loss: ${profit_or_loss:.2f}")
 
 
-def print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions):
+def print_trading_result_arima(initial_balance, one_year_data, one_year_2d, one_year_predictions):
     """
     Simulates a trading strategy using ARIMA predicted and actual data for one year
     and calculates the profit or loss made during the period.
@@ -614,7 +613,6 @@ def print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
     """
 
     # Set initial trading parameters.
-    initial_balance = 10000
     balance = initial_balance
     stocks = 0
     N = len(one_year_predictions)
