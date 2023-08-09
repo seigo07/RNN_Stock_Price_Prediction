@@ -19,7 +19,10 @@ jobs:
             pip install -r requirements.txt
       - name: Run linting
         run:
-            flake8 src/performance.py
+            flake8 src/lstm.py
+            flake8 src/gru.py
+            flake8 src/arima.py
+            flake8 src/functions.py
       - name: Run Python
         run:
 #          python src/performance.py
