@@ -25,4 +25,7 @@ jobs:
             flake8 src/functions.py
       - name: Run Python
         run:
-#          python src/performance.py
+            python src/lstm.py
+            python src/gru.py
+            python src/arima.py
+            python src/functions.py
