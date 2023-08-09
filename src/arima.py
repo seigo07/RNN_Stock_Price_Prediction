@@ -11,10 +11,9 @@ import tensorflow as tf
 from functions import *
 
 # Define error messages for invalid arguments
-INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER> <INITIAL_BALANCE>"
-INVALID_ARGS_INITIAL_BALANCE_ERROR = "Please enter an amount greater than or equal to 0 yen"
+INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
 # Define the number of expected arguments (script name + 2 arguments)
-ARGV_NUMBER = 3
+ARGV_NUMBER = 2
 
 # Check if the number of arguments provided is correct
 if len(sys.argv) != ARGV_NUMBER:
@@ -25,11 +24,6 @@ algorithm = "ARIMA"
 
 # Get the ticker symbol from command-line arguments
 ticker = sys.argv[1]
-
-# Validate and get the initial balance from command-line arguments
-if int(sys.argv[2]) <= 0:
-    exit(INVALID_ARGS_INITIAL_BALANCE_ERROR)
-initial_balance = sys.argv[2]
 
 # Suppress all warnings for cleaner output
 warnings.simplefilter("ignore")
@@ -69,7 +63,7 @@ print_metrics_arima(data, train_size, predictions, best_theil_u)
 one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_year_data_arima(dataset, scaler, train_data_2d)
 
 # Calculate and display the trading outcomes based on the one-year predictions
-print_trading_result_arima(initial_balance, one_year_data, one_year_2d, one_year_predictions)
+print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
 
 # Visualize the trading results for a more intuitive understanding of performance
 plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions)
