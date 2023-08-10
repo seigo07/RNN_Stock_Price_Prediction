@@ -8,7 +8,8 @@ import sys
 import random
 import warnings
 import tensorflow as tf
-from functions import *
+from functions import load_data, clean_data, split_data, create_dataset, build_model, get_best_params, print_metrics, get_one_year_data, print_trading_result, plot_trading_result
+import numpy as np
 
 # Define error messages for invalid arguments
 INVALID_ARGS_NUMBER_ERROR = "Usage: python src/lstm.py <TICKER>"
@@ -82,7 +83,3 @@ plot_trading_result(algorithm, ticker, sequence_length, one_year_data, one_year_
 
 
 # In[75]:
-
-
-
-

@@ -8,7 +8,8 @@ import sys
 import random
 import warnings
 import tensorflow as tf
-from functions import *
+from functions import load_data, clean_data, split_data, get_best_params_arima, get_arima_predictions, print_metrics_arima, get_one_year_data_arima, print_trading_result_arima, plot_trading_result_arima
+import numpy as np
 
 # Define error messages for invalid arguments
 INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
@@ -71,7 +72,3 @@ plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_yea
 
 
 # In[ ]:
-
-
-
-
