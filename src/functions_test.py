@@ -8,7 +8,7 @@ from io import StringIO
 from unittest.mock import patch
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -276,6 +276,35 @@ class TestPrintMetrics(unittest.TestCase):
         mape = mean_absolute_percentage_error(y_test, predictions)
         self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
         self.assertEqual(output[4], f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.2f}")
+
+
+class TestPrintMetricsArima(unittest.TestCase):
+
+    def setUp(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = StringIO()  # Redirect stdout
+
+    def tearDown(self):
+        sys.stdout = self.original_stdout  # Restore stdout
+
+    def test_print_metrics_arima(self):
+        # Sample data, predictions, and Theil U value
+        data = np.array([2, 3, 5, 8, 12, 18, 27, 39])
+        train_size = 6
+        predictions = np.array([25, 36])
+        best_theil_u = 1.2  # Assume this value for the purpose of the test
+
+        print_metrics_arima(data, train_size, predictions, best_theil_u)
+
+        output = sys.stdout.getvalue().strip().split("\n")
+
+        # Check each of the printed outputs except MAPE
+        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(data[train_size:], predictions))}")
+        self.assertEqual(output[1], f"MAE: {mean_absolute_error(data[train_size:], predictions)}")
+        self.assertEqual(output[2], f"R2: {r2_score(data[train_size:], predictions)}")
+        mape = mean_absolute_percentage_error(data[train_size:], predictions)
+        self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
+        self.assertEqual(output[4], f"Theil U statistic : {best_theil_u:.2f}")
 
 
 if __name__ == '__main__':
