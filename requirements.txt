@@ -1,8 +1,8 @@
-numpy
-flake8
-matplotlib
-yfinance
-scikit-learn
-tensorflow
-keras
-statsmodels
+numpy >= 1.2
+flake8 >= 4.0.1
+matplotlib >= 3.7
+yfinance >= 0.2
+scikit-learn >= 0.0
+tensorflow >= 2.12
+keras >= 2.12.0
+statsmodels >= 0.13
