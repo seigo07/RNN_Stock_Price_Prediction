@@ -198,41 +198,48 @@ class TestCreateDataset(unittest.TestCase):
 
 class TestBuildModel(unittest.TestCase):
 
+    # Setup method for initializing the parameters that will be used in the tests.
     def setUp(self):
+        # TensorFlow module, which will be used for testing the model's structure.
         self.tf = tf
+        # Specified length of the input sequence.
         self.sequence_length = 5
+        # Specified learning rate for the optimizer.
         self.lr = 0.001
 
+    # Test to ensure that when "LSTM" is passed as the algorithm type, the correct model structure is built.
     def test_lstm_model(self):
         model = build_model("LSTM", self.sequence_length, self.tf, self.lr)
 
-        # Check if the first layer is LSTM
+        # Ensure the first layer is an LSTM layer.
         self.assertIsInstance(model.layers[0], LSTM)
-        # Check if input shape is correct
+        # Ensure the input shape to the LSTM layer is correct.
         self.assertEqual(model.layers[0].input_shape, (None, self.sequence_length, 1))
-        # Check learning rate
+        # Validate the learning rate of the model's optimizer.
         self.assertAlmostEqual(model.optimizer.learning_rate.numpy(), self.lr, places=10)
-        # Check the dense layer
+        # Ensure the next layer after LSTM is a dense layer and verify its number of units.
         self.assertIsInstance(model.layers[1], Dense)
         self.assertEqual(model.layers[1].units, 1)
 
+    # Test to ensure that when "GRU" is passed as the algorithm type, the correct model structure is built.
     def test_gru_model(self):
         model = build_model("GRU", self.sequence_length, self.tf, self.lr)
 
-        # Check if the first layer is GRU
+        # Ensure the first layer is a GRU layer.
         self.assertIsInstance(model.layers[0], GRU)
-        # Check if input shape is correct
+        # Ensure the input shape to the GRU layer is correct.
         self.assertEqual(model.layers[0].input_shape, (None, self.sequence_length, 1))
-        # Check learning rate
+        # Validate the learning rate of the model's optimizer.
         self.assertAlmostEqual(model.optimizer.learning_rate.numpy(), self.lr, places=10)
-        # Check the dense layer
+        # Ensure the next layer after GRU is a dense layer and verify its number of units.
         self.assertIsInstance(model.layers[1], Dense)
         self.assertEqual(model.layers[1].units, 1)
 
+    # Test the case where an invalid algorithm type is passed. The default should be "LSTM".
     def test_invalid_algorithm(self):
         model = build_model("INVALID", self.sequence_length, self.tf, self.lr)
 
-        # Check if the default layer is LSTM
+        # Even if the algorithm type is invalid, the default layer should be LSTM.
         self.assertIsInstance(model.layers[0], LSTM)
 
 
