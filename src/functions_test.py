@@ -410,30 +410,36 @@ class TestPrintMetricsArima(unittest.TestCase):
 class TestGetOneYearData(unittest.TestCase):
 
     def setUp(self):
-        # Generate a dummy dataset
+        # Generate a dummy dataset with a daily frequency spanning three years
         date_rng = pd.date_range(start='2020-01-01', end='2023-01-01', freq='D')
         df = pd.DataFrame(date_rng, columns=['date'])
-        df['Close'] = np.random.randn(df.shape[0])
-        df.set_index('date', inplace=True)
+        df['Close'] = np.random.randn(df.shape[0])  # Populate the 'Close' column with random numbers
+        df.set_index('date', inplace=True)  # Set the 'date' column as the index
         self.dataset = df
 
         # Define other parameters for testing
         self.sequence_length = 5
+
+        # Initialize and fit a MinMaxScaler to the 'Close' values of the dataset
         self.scaler = MinMaxScaler()
         self.scaler.fit(self.dataset['Close'].values.reshape(-1, 1))
+
+        # Mock model object for testing purposes
         self.model = MockModel()
 
     def test_get_one_year_data(self):
+        # Call the function to get the last one year of data, scaled data, and its predictions
         one_year_data, one_year_data_2d, one_year_predictions = get_one_year_data(self.dataset, self.sequence_length,
                                                                                   self.scaler, self.model)
 
-        # Assert that the returned data frame is no more than 1 year in length
+        # Assert that the returned data frame's latest date is no more than 1 year from today's date
         self.assertTrue((datetime.now() - one_year_data.index[-1]).days <= 365)
 
-        # Assert the returned 2D data matches the original data's shape
+        # Ensure the shape of the 2D scaled data corresponds with the returned one-year data
         self.assertEqual(one_year_data_2d.shape[0], one_year_data.shape[0])
 
-        # Assert that the predictions' shape matches the expected shape
+        # The number of predictions should be the total data minus the sequence length.
+        # This ensures each prediction is based on the previous sequence of data.
         expected_rows = one_year_data_2d.shape[0] - self.sequence_length
         self.assertEqual(one_year_predictions.shape[0], expected_rows)
 
