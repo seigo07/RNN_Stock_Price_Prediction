@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest.mock import patch
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -346,6 +346,36 @@ class TestGetOneYearData(unittest.TestCase):
         # Assert that the predictions' shape matches the expected shape
         expected_rows = one_year_data_2d.shape[0] - self.sequence_length
         self.assertEqual(one_year_predictions.shape[0], expected_rows)
+
+
+class TestGetOneYearDataArima(unittest.TestCase):
+
+    def setUp(self):
+        # Generate a dummy dataset
+        date_rng = pd.date_range(start='2020-01-01', end='2023-01-01', freq='D')
+        df = pd.DataFrame(date_rng, columns=['date'])
+        df['Close'] = np.random.randn(df.shape[0])
+        df.set_index('date', inplace=True)
+        self.dataset = df
+
+        # Define other parameters for testing
+        self.scaler = MinMaxScaler()
+        train_data = self.dataset[self.dataset.index < '2022-01-01']
+        self.train_data_2d = train_data['Close'].values.reshape(-1, 1)
+        self.scaler.fit(self.train_data_2d)
+
+    def test_get_one_year_data_arima(self):
+        one_year_data, one_year_data_scaled_2d, one_year_data_2d, one_year_predictions = get_one_year_data_arima(
+            self.dataset, self.scaler, self.train_data_2d)
+
+        # Assert that the returned data frame is no more than 1 year in length
+        self.assertTrue((datetime.now() - one_year_data.index[-1]).days <= 365)
+
+        # Assert the returned 2D data matches the original data's shape
+        self.assertEqual(one_year_data_scaled_2d.shape, one_year_data_2d.shape)
+
+        # Assert that the predictions' shape matches the expected shape
+        self.assertEqual(one_year_predictions.shape[0], one_year_data_2d.shape[0])
 
 
 if __name__ == '__main__':
