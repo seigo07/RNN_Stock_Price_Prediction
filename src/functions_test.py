@@ -585,72 +585,82 @@ class TestPrintTradingResultARIMA(unittest.TestCase):
 class TestPlotTradingResult(unittest.TestCase):
 
     def setUp(self):
-        # Generate a dummy dataset
+        # Generate a dummy dataset with a daily frequency spanning one year
         date_rng = pd.date_range(start='2020-01-01', end='2020-12-31', freq='D')
         df = pd.DataFrame(date_rng, columns=['date'])
-        df['Close'] = np.linspace(10, 50, num=df.shape[0])  # Linearly increasing prices
-        df.set_index('date', inplace=True)
+
+        # Set linearly increasing prices for the 'Close' column
+        df['Close'] = np.linspace(10, 50, num=df.shape[0])
+        df.set_index('date', inplace=True)  # Use the 'date' column as the index
         self.one_year_data = df
 
-        # Actual data in 2D
+        # Convert the 'Close' prices to 2D for further processing
         self.one_year_data_2d = df['Close'].values.reshape(-1, 1)
 
-        # Simulate ARIMA predictions that always expect an increase in prices
-        # Deduct sequence_length from the predictions length to match the x and y dimensions when plotting
+        # Simulate ARIMA predictions, which always expect a price increase by 1
+        # Deduct sequence_length to match predictions with actual data when plotting
         sequence_length = 5
         self.one_year_predictions = (df['Close'].values + 1)[sequence_length:]
 
     @patch("matplotlib.pyplot.show")
     def test_plot_trading_result(self, mock_show):
-        # Call the function
+        # This method tests the plotting function for the trading result
+
+        # Call the function to plot the trading result
         plot_trading_result('LSTM', 'AAPL', 5, self.one_year_data, self.one_year_data_2d, self.one_year_predictions)
 
-        # Check that show was called once (plot was generated)
+        # Assert that the plot's show() method was called (indicating the plot was generated)
         mock_show.assert_called_once()
 
-        # Check if the title of the plot is correct
+        # Validate that the title of the plot is as expected
         title = plt.gca().get_title()
         self.assertEqual(title, 'AAPL Stock Price Predictions with Buy/Sell Points (Last One Year)')
 
-        # Check if the plot contains the right labels
+        # Ensure the plot contains the appropriate labels for the lines and markers
         labels = [t.get_text() for t in plt.gca().get_legend().get_texts()]
         self.assertIn('Actual Stock Price', labels)
         self.assertIn('LSTM Predicted Stock Price', labels)
-        self.assertIn('Buy', labels)  # because our predicted price is always higher
+        self.assertIn('Buy',
+                      labels)  # We expect a 'Buy' label because our simulated predictions always anticipate a price increase
 
 
 class TestPlotTradingResultARIMA(unittest.TestCase):
 
     def setUp(self):
-        # Generate a dummy dataset
+        # Generate a dummy dataset with a daily frequency spanning one year
         date_rng = pd.date_range(start='2020-01-01', end='2020-12-31', freq='D')
         df = pd.DataFrame(date_rng, columns=['date'])
-        df['Close'] = np.linspace(10, 50, num=df.shape[0])  # Linearly increasing prices
-        df.set_index('date', inplace=True)
+
+        # Set linearly increasing prices for the 'Close' column
+        df['Close'] = np.linspace(10, 50, num=df.shape[0])
+        df.set_index('date', inplace=True)  # Set the 'date' column as the index for the DataFrame
         self.one_year_data = df
 
-        # Actual data in 2D
+        # Convert the 'Close' prices to a 2D array for further processing
         self.one_year_data_2d = df['Close'].values.reshape(-1, 1)
 
-        # Simulate ARIMA predictions that always expect an increase in prices
+        # Simulate ARIMA predictions, which always anticipate a price increase by 1
         self.one_year_predictions = df['Close'].values + 1
 
     def test_plot_trading_result_arima(self):
-        # Suppress the actual plot during testing
+        # This method tests the ARIMA plotting function for the trading result
+
+        # Turn off the interactive mode in matplotlib to prevent the actual plot from showing during testing
         plt.ioff()
 
-        # Run the plotting function with mock data
+        # Use a try-except block to handle potential exceptions from the plotting function and set the result flag
         try:
-            plot_trading_result_arima("ARIMA", "AAPL", self.one_year_data, self.one_year_data_2d, self.one_year_predictions)
-            result = True
+            plot_trading_result_arima("ARIMA", "AAPL", self.one_year_data, self.one_year_data_2d,
+                                      self.one_year_predictions)
+            result = True  # Set the result to True if no exceptions were raised
         except Exception as e:
-            print(e)  # Print exception for debugging
-            result = False
+            print(e)  # Print any exception for debugging purposes
+            result = False  # Set the result to False if an exception was raised
 
-        # Ensure that no errors were encountered during execution
+        # Assert that the function executed without raising any exceptions
         self.assertTrue(result)
 
-        # Resume normal plotting after test
+        # Turn the interactive mode back on after test to resume normal plotting operations
         plt.ion()
 
 
