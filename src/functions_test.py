@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 
 # Assuming your function is in a module named 'data_loader'
-from functions import load_data
+from src.functions import load_data
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
 
