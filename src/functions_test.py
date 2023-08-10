@@ -5,7 +5,7 @@ import tensorflow as tf
 import warnings
 from unittest.mock import patch
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -178,6 +178,7 @@ class TestTimeSeriesCrossValidation(unittest.TestCase):
     def setUp(self):
         # Suppress all warnings to ensure cleaner output
         warnings.filterwarnings("ignore")
+
         # Reshape the data array so it becomes 2D
         self.data = np.arange(100).reshape(-1, 1)
         self.n_splits = 5
@@ -191,6 +192,40 @@ class TestTimeSeriesCrossValidation(unittest.TestCase):
 
         # Optionally, you can check the range of the result, since Theil U statistic is >= 0
         self.assertGreaterEqual(result, 0)
+
+
+class TestArimaPredictions(unittest.TestCase):
+
+    def setUp(self):
+        # Suppress all warnings to ensure cleaner output
+        warnings.filterwarnings("ignore")
+
+        # Create a mock dataset
+        self.train_data = np.array([x for x in range(10)])
+        self.test_data = np.array([x for x in range(10, 15)])
+
+        # Scale the data using MinMaxScaler
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.train_data_2d = self.scaler.fit_transform(self.train_data.reshape(-1, 1))
+        self.test_data_2d = self.scaler.transform(self.test_data.reshape(-1, 1))
+
+        # Set mock ARIMA parameters. These may not be optimal for the mock data but serve demonstration purposes.
+        self.best_p = 1
+        self.best_d = 1
+        self.best_q = 1
+
+    def test_get_arima_predictions(self):
+        # Call the function to get predictions
+        predictions = get_arima_predictions(self.scaler, self.train_data_2d, self.test_data_2d, self.best_p, self.best_d, self.best_q)
+
+        # Ensure the predictions are of the right shape
+        self.assertEqual(predictions.shape, (len(self.test_data),))
+
+        # Note: In a real-world scenario, you'd compare the values of `predictions` with some expected results.
+        # However, given that ARIMA models involve a certain degree of randomness and approximation,
+        # it's challenging to define an "expected" result for this mock data.
+        # A common approach is to ensure that the model's predictions follow the general trend or pattern of the data.
+        # Alternatively, the RMSE or other metrics can be used to ensure the model's performance is within acceptable bounds.
 
 
 if __name__ == '__main__':
