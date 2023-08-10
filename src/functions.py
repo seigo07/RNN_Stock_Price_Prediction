@@ -12,6 +12,7 @@ from itertools import product
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"
 
+
 def load_data(ticker):
     """
     Load historical stock data for a given ticker.
