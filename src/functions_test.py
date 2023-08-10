@@ -4,8 +4,9 @@ import numpy as np
 import tensorflow as tf
 import warnings
 from unittest.mock import patch
+from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -226,6 +227,26 @@ class TestArimaPredictions(unittest.TestCase):
         # it's challenging to define an "expected" result for this mock data.
         # A common approach is to ensure that the model's predictions follow the general trend or pattern of the data.
         # Alternatively, the RMSE or other metrics can be used to ensure the model's performance is within acceptable bounds.
+
+
+class TestTheilUStatistic(unittest.TestCase):
+
+    def test_theil_u_statistic(self):
+        # Mock data
+        actual = np.array([3, 2, 4, 5, 6])
+        predicted = np.array([2.8, 2.1, 3.9, 5.2, 6.1])
+        naive = np.array([3, 3, 2, 4, 5])
+
+        # Expected Theil U statistic for mock data
+        mse_actual = mean_squared_error(actual, naive)
+        mse_predicted = mean_squared_error(actual, predicted)
+        expected_theil_u = np.sqrt(mse_predicted / mse_actual)
+
+        # Use the function to compute the Theil U statistic
+        computed_theil_u = theil_u_statistic(actual, predicted, naive)
+
+        # Compare the computed Theil U statistic to the expected value
+        self.assertAlmostEqual(computed_theil_u, expected_theil_u)
 
 
 if __name__ == '__main__':
