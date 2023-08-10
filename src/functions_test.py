@@ -271,35 +271,36 @@ class TestTimeSeriesCrossValidation(unittest.TestCase):
 class TestArimaPredictions(unittest.TestCase):
 
     def setUp(self):
-        # Suppress all warnings to ensure cleaner output
+        # To ensure the output remains clean during tests, suppress any potential warnings.
         warnings.filterwarnings("ignore")
 
-        # Create a mock dataset
+        # Generate mock datasets for training and testing. The train dataset consists of the integers from 0 to 9,
+        # while the test dataset consists of the integers from 10 to 14.
         self.train_data = np.array([x for x in range(10)])
         self.test_data = np.array([x for x in range(10, 15)])
 
-        # Scale the data using MinMaxScaler
+        # Utilize the MinMaxScaler to scale the data between 0 and 1. This helps in normalizing the data which can
+        # potentially improve the performance of the ARIMA model.
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.train_data_2d = self.scaler.fit_transform(self.train_data.reshape(-1, 1))
         self.test_data_2d = self.scaler.transform(self.test_data.reshape(-1, 1))
 
-        # Set mock ARIMA parameters. These may not be optimal for the mock data but serve demonstration purposes.
+        # For demonstration purposes, mock ARIMA parameters are defined.
+        # Note that these may not be optimal for the mock data.
         self.best_p = 1
         self.best_d = 1
         self.best_q = 1
 
     def test_get_arima_predictions(self):
-        # Call the function to get predictions
+        # Use the provided ARIMA function to generate predictions on the test data using the trained ARIMA model.
         predictions = get_arima_predictions(self.scaler, self.train_data_2d, self.test_data_2d, self.best_p, self.best_d, self.best_q)
 
-        # Ensure the predictions are of the right shape
+        # Confirm that the shape of the predictions matches the test data length.
         self.assertEqual(predictions.shape, (len(self.test_data),))
 
-        # Note: In a real-world scenario, you'd compare the values of `predictions` with some expected results.
-        # However, given that ARIMA models involve a certain degree of randomness and approximation,
-        # it's challenging to define an "expected" result for this mock data.
-        # A common approach is to ensure that the model's predictions follow the general trend or pattern of the data.
-        # Alternatively, the RMSE or other metrics can be used to ensure the model's performance is within acceptable bounds.
+        # In actual tests, the values of `predictions` would ideally be compared to known expected results.
+        # Given ARIMA's inherent variability and approximation, direct comparisons for mock data can be challenging.
+        # It's often more practical to ensure that predictions follow data trends or to check prediction performance metrics.
 
 
 class TestTheilUStatistic(unittest.TestCase):
