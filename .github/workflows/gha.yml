@@ -27,5 +27,5 @@ jobs:
       - name: Run linting on src/lstm.py
         run: flake8 src/lstm.py
 
-      - name: Run Python script
-#        run: python src/lstm.py
+#      - name: Run Python script
+#        run: python src/performance.py
