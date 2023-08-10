@@ -484,45 +484,53 @@ class TestGetOneYearDataArima(unittest.TestCase):
 class TestPrintTradingResult(unittest.TestCase):
 
     def setUp(self):
-        # Generate a dummy dataset
+        # Generate a dummy dataset with a daily frequency spanning one year
         date_rng = pd.date_range(start='2020-01-01', end='2020-12-31', freq='D')
         df = pd.DataFrame(date_rng, columns=['date'])
-        df['Close'] = np.linspace(10, 50, num=df.shape[0])  # Linearly increasing prices
-        df.set_index('date', inplace=True)
+
+        # Set linearly increasing prices for the 'Close' column
+        df['Close'] = np.linspace(10, 50, num=df.shape[0])
+        df.set_index('date', inplace=True)  # Set the 'date' column as the index
         self.one_year_data = df
 
         self.sequence_length = 10
 
-        # Actual data in 2D
+        # Convert the 'Close' prices to 2D, excluding the last sequence length's worth of data
         self.one_year_data_2d = df['Close'].values[:-self.sequence_length].reshape(-1, 1)
 
-        # Simulate predictions that always expect an increase in prices
+        # Simulate predictions that always expect a price increase by adding 1 to the 'Close' prices
+        # (excluding the last price)
         self.one_year_predictions = df['Close'].values[self.sequence_length - 1:-1] + 1
 
     @contextlib.contextmanager
     def capture_stdout(self):
+        # This context manager temporarily redirects stdout to capture print outputs
         new_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = new_stdout
-        yield new_stdout
-        sys.stdout = old_stdout
+        yield new_stdout  # Yield control back to the caller
+        sys.stdout = old_stdout  # Reset stdout to its original state
 
     def test_print_trading_result(self):
+        # Capture the output of the function
         with self.capture_stdout() as capturedOutput:
-            # Call the function
+            # Call the function to simulate and print the trading result
             print_trading_result(self.one_year_data, self.one_year_data_2d, self.one_year_predictions,
                                  self.sequence_length)
 
-        # Validate the captured output
+        # Extract captured output lines for validation
         output = capturedOutput.getvalue().split("\n")
+
+        # Validate that the initial balance was printed correctly
         self.assertTrue("Initial Balance: $10000" in output)
 
-        # The exact profit or loss can vary depending on the trading strategy and predictions.
-        # Thus, checking for a positive balance here since our predictions always expect an increase.
+        # The trading result depends on the trading strategy and predictions.
+        # Since our simulated predictions always expect a price increase, the final balance
+        # and profit/loss should be positive.
         final_balance = float(output[1].split(": $")[1])
         profit_or_loss = float(output[2].split(": $")[1])
-        self.assertTrue(final_balance > 10000)
-        self.assertTrue(profit_or_loss > 0)
+        self.assertTrue(final_balance > 10000)  # Check for an increased balance
+        self.assertTrue(profit_or_loss > 0)  # Check for a positive profit
 
 
 class TestPrintTradingResultARIMA(unittest.TestCase):
