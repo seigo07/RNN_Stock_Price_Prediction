@@ -1,10 +1,11 @@
 import unittest
-from unittest.mock import patch
 import pandas as pd
 import numpy as np
+from unittest.mock import patch
+from sklearn.preprocessing import MinMaxScaler
 
 # Assuming your function is in a module named 'data_loader'
-from src.functions import load_data, clean_data
+from src.functions import load_data, clean_data, split_data
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
 
@@ -59,6 +60,46 @@ class TestCleanData(unittest.TestCase):
     def test_reshape_close_values(self):
         _, data = clean_data(self.dataset)
         self.assertEqual(data.shape, (4, 1))
+
+
+class TestSplitData(unittest.TestCase):
+
+    def setUp(self):
+        self.data = np.array([[100], [101], [102], [103], [104], [105], [106], [107], [108], [109]])
+
+    def test_split_ratio(self):
+        train_data, test_data, _ = split_data(self.data)
+        self.assertEqual(len(train_data), 8)  # 80% of 10
+        self.assertEqual(len(test_data), 2)   # 20% of 10
+
+    def test_normalization(self):
+        train_data, test_data, _ = split_data(self.data)
+        self.assertTrue((0 <= train_data).all() and (train_data <= 1).all())
+
+        # Instead of enforcing that test_data values should be between 0 and 1,
+        # check if they are correctly scaled based on the training data's range.
+        min_train = np.min(self.data[:8])
+        max_train = np.max(self.data[:8])
+        min_test = np.min(self.data[8:])
+        max_test = np.max(self.data[8:])
+
+        self.assertAlmostEqual(train_data[0], 0, delta=1e-10)  # Train data minimum should be approximately 0
+        self.assertAlmostEqual(train_data[-1], (max_train - min_train) / (max_train - min_train),
+                               delta=1e-10)  # Last train data point scaled
+        self.assertAlmostEqual(test_data[0], (min_test - min_train) / (max_train - min_train),
+                               delta=1e-10)  # First test data point scaled
+        self.assertAlmostEqual(test_data[-1], (max_test - min_train) / (max_train - min_train),
+                               delta=1e-10)  # Last test data point scaled
+
+    def test_using_same_scaler(self):
+        _, _, scaler = split_data(self.data)
+        manual_test_data = scaler.transform(self.data[-2:])  # manually transform the last two data points
+        _, test_data, _ = split_data(self.data)
+        self.assertTrue(np.array_equal(manual_test_data, test_data))
+
+    def test_return_scaler_type(self):
+        _, _, scaler = split_data(self.data)
+        self.assertIsInstance(scaler, MinMaxScaler)
 
 
 if __name__ == '__main__':
