@@ -4,8 +4,7 @@ import numpy as np
 from unittest.mock import patch
 from sklearn.preprocessing import MinMaxScaler
 
-# Assuming your function is in a module named 'data_loader'
-from src.functions import load_data, clean_data, split_data
+from src.functions import load_data, clean_data, split_data, create_dataset
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
 
@@ -100,6 +99,35 @@ class TestSplitData(unittest.TestCase):
     def test_return_scaler_type(self):
         _, _, scaler = split_data(self.data)
         self.assertIsInstance(scaler, MinMaxScaler)
+
+
+class TestCreateDataset(unittest.TestCase):
+
+    def setUp(self):
+        self.data = np.array([[100], [101], [102], [103], [104], [105], [106], [107], [108], [109]])
+
+    def test_dataset_length(self):
+        time_steps = 3
+        data_X, data_Y = create_dataset(self.data, time_steps)
+
+        expected_length = len(self.data) - time_steps
+        self.assertEqual(len(data_X), expected_length)
+        self.assertEqual(len(data_Y), expected_length)
+
+    def test_sequence_length(self):
+        time_steps = 3
+        data_X, _ = create_dataset(self.data, time_steps)
+
+        for sequence in data_X:
+            self.assertEqual(len(sequence), time_steps)
+
+    def test_correct_sequence_values(self):
+        time_steps = 3
+        data_X, data_Y = create_dataset(self.data, time_steps)
+
+        for i in range(len(data_X)):
+            np.testing.assert_array_equal(data_X[i], self.data[i:i + time_steps].flatten())
+            self.assertEqual(data_Y[i], self.data[i + time_steps][0])
 
 
 if __name__ == '__main__':
