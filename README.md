@@ -1,12 +1,11 @@
 # Project
 
-Advanced Regression Techniques.
+RNN Stock Price Prediction.
 
 ## Description
 
-This is the system of regression models that can accurately predict the future stock prices.
-This system analyzes stock prices of your favorite stocks for several years.
-ARIMA, LSTM, and GRU models are used as an algorithms.
+This is the regression system that can accurately predict the future stock prices using several models: LSTM, GRU, and ARIMA.
+Specify the stock price of your favourite stock, train the model using about three years of data, and output trading results for one year.
 
 ## Getting Started
 
@@ -19,9 +18,11 @@ ARIMA, LSTM, and GRU models are used as an algorithms.
 * Please run the following command
 
 ```
-cd Advanced_Regression_Techniques
-python3 src/performance.py <brand>
+cd RNN_Stock_Price_Prediction
+python3 src/lstm.py <ticker>
+python3 src/gru.py <ticker>
+python3 src/arima.py <ticker>
  
-<brand> : Specify one brand name you like,
-eg. GOOGL AAPL FB AMZN MSFT etc
+<ticker> : Specify one ticker name you like,
+eg. AAPL MSFT AMZN NVDA TSLA
 ```
