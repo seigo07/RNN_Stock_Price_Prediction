@@ -10,6 +10,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, m
 from statsmodels.tsa.arima.model import ARIMA
 from itertools import product
 
+# Define error messages for invalid ticker
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"
 
 
