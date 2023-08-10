@@ -1,10 +1,12 @@
 import unittest
 import pandas as pd
 import numpy as np
+import tensorflow as tf
 from unittest.mock import patch
 from sklearn.preprocessing import MinMaxScaler
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model
+from keras.layers import LSTM, GRU, Dense
 
-from src.functions import load_data, clean_data, split_data, create_dataset
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
 
@@ -128,6 +130,46 @@ class TestCreateDataset(unittest.TestCase):
         for i in range(len(data_X)):
             np.testing.assert_array_equal(data_X[i], self.data[i:i + time_steps].flatten())
             self.assertEqual(data_Y[i], self.data[i + time_steps][0])
+
+
+class TestBuildModel(unittest.TestCase):
+
+    def setUp(self):
+        self.tf = tf
+        self.sequence_length = 5
+        self.lr = 0.001
+
+    def test_lstm_model(self):
+        model = build_model("LSTM", self.sequence_length, self.tf, self.lr)
+
+        # Check if the first layer is LSTM
+        self.assertIsInstance(model.layers[0], LSTM)
+        # Check if input shape is correct
+        self.assertEqual(model.layers[0].input_shape, (None, self.sequence_length, 1))
+        # Check learning rate
+        self.assertAlmostEqual(model.optimizer.learning_rate.numpy(), self.lr, places=10)
+        # Check the dense layer
+        self.assertIsInstance(model.layers[1], Dense)
+        self.assertEqual(model.layers[1].units, 1)
+
+    def test_gru_model(self):
+        model = build_model("GRU", self.sequence_length, self.tf, self.lr)
+
+        # Check if the first layer is GRU
+        self.assertIsInstance(model.layers[0], GRU)
+        # Check if input shape is correct
+        self.assertEqual(model.layers[0].input_shape, (None, self.sequence_length, 1))
+        # Check learning rate
+        self.assertAlmostEqual(model.optimizer.learning_rate.numpy(), self.lr, places=10)
+        # Check the dense layer
+        self.assertIsInstance(model.layers[1], Dense)
+        self.assertEqual(model.layers[1].units, 1)
+
+    def test_invalid_algorithm(self):
+        model = build_model("INVALID", self.sequence_length, self.tf, self.lr)
+
+        # Check if the default layer is LSTM
+        self.assertIsInstance(model.layers[0], LSTM)
 
 
 if __name__ == '__main__':
