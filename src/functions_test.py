@@ -5,14 +5,24 @@ import tensorflow as tf
 import warnings
 import sys
 from io import StringIO
+from datetime import datetime
 from unittest.mock import patch
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data
 from keras.layers import LSTM, GRU, Dense
 
 
 INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
+
+
+class MockModel:
+    """
+    A mock model class to simulate predictions.
+    This will just return the input for simplicity.
+    """
+    def predict(self, data):
+        return data
 
 
 class TestLoadData(unittest.TestCase):
@@ -305,6 +315,37 @@ class TestPrintMetricsArima(unittest.TestCase):
         mape = mean_absolute_percentage_error(data[train_size:], predictions)
         self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
         self.assertEqual(output[4], f"Theil U statistic : {best_theil_u:.2f}")
+
+
+class TestGetOneYearData(unittest.TestCase):
+
+    def setUp(self):
+        # Generate a dummy dataset
+        date_rng = pd.date_range(start='2020-01-01', end='2023-01-01', freq='D')
+        df = pd.DataFrame(date_rng, columns=['date'])
+        df['Close'] = np.random.randn(df.shape[0])
+        df.set_index('date', inplace=True)
+        self.dataset = df
+
+        # Define other parameters for testing
+        self.sequence_length = 5
+        self.scaler = MinMaxScaler()
+        self.scaler.fit(self.dataset['Close'].values.reshape(-1, 1))
+        self.model = MockModel()
+
+    def test_get_one_year_data(self):
+        one_year_data, one_year_data_2d, one_year_predictions = get_one_year_data(self.dataset, self.sequence_length,
+                                                                                  self.scaler, self.model)
+
+        # Assert that the returned data frame is no more than 1 year in length
+        self.assertTrue((datetime.now() - one_year_data.index[-1]).days <= 365)
+
+        # Assert the returned 2D data matches the original data's shape
+        self.assertEqual(one_year_data_2d.shape[0], one_year_data.shape[0])
+
+        # Assert that the predictions' shape matches the expected shape
+        expected_rows = one_year_data_2d.shape[0] - self.sequence_length
+        self.assertEqual(one_year_predictions.shape[0], expected_rows)
 
 
 if __name__ == '__main__':
