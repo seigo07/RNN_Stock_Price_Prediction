@@ -306,20 +306,24 @@ class TestArimaPredictions(unittest.TestCase):
 class TestTheilUStatistic(unittest.TestCase):
 
     def test_theil_u_statistic(self):
-        # Mock data
+        # Define mock data for the test. This includes the actual values, predicted values, and naive forecast.
         actual = np.array([3, 2, 4, 5, 6])
         predicted = np.array([2.8, 2.1, 3.9, 5.2, 6.1])
         naive = np.array([3, 3, 2, 4, 5])
 
-        # Expected Theil U statistic for mock data
+        # Calculate the expected Theil U statistic for the mock data:
+        # First, compute the Mean Squared Error (MSE) of the actual values and the naive forecast.
+        # Then, compute the MSE of the actual values and the predicted values.
+        # The Theil U statistic is the square root of the ratio of these two MSE values.
         mse_actual = mean_squared_error(actual, naive)
         mse_predicted = mean_squared_error(actual, predicted)
         expected_theil_u = np.sqrt(mse_predicted / mse_actual)
 
-        # Use the function to compute the Theil U statistic
+        # Use the provided function to compute the Theil U statistic.
         computed_theil_u = theil_u_statistic(actual, predicted, naive)
 
-        # Compare the computed Theil U statistic to the expected value
+        # Compare the computed Theil U statistic to the expected value.
+        # Since this is a float comparison, we use `assertAlmostEqual` to account for potential minor discrepancies.
         self.assertAlmostEqual(computed_theil_u, expected_theil_u)
 
 
