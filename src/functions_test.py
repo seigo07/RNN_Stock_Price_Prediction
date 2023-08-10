@@ -11,7 +11,7 @@ from datetime import datetime
 from unittest.mock import patch
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima, print_trading_result, print_trading_result_arima, plot_trading_result
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima, print_trading_result, print_trading_result_arima, plot_trading_result, plot_trading_result_arima
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -500,6 +500,41 @@ class TestPlotTradingResult(unittest.TestCase):
         self.assertIn('Actual Stock Price', labels)
         self.assertIn('LSTM Predicted Stock Price', labels)
         self.assertIn('Buy', labels)  # because our predicted price is always higher
+
+
+class TestPlotTradingResultARIMA(unittest.TestCase):
+
+    def setUp(self):
+        # Generate a dummy dataset
+        date_rng = pd.date_range(start='2020-01-01', end='2020-12-31', freq='D')
+        df = pd.DataFrame(date_rng, columns=['date'])
+        df['Close'] = np.linspace(10, 50, num=df.shape[0])  # Linearly increasing prices
+        df.set_index('date', inplace=True)
+        self.one_year_data = df
+
+        # Actual data in 2D
+        self.one_year_data_2d = df['Close'].values.reshape(-1, 1)
+
+        # Simulate ARIMA predictions that always expect an increase in prices
+        self.one_year_predictions = df['Close'].values + 1
+
+    def test_plot_trading_result_arima(self):
+        # Suppress the actual plot during testing
+        plt.ioff()
+
+        # Run the plotting function with mock data
+        try:
+            plot_trading_result_arima("ARIMA", "AAPL", self.one_year_data, self.one_year_data_2d, self.one_year_predictions)
+            result = True
+        except Exception as e:
+            print(e)  # Print exception for debugging
+            result = False
+
+        # Ensure that no errors were encountered during execution
+        self.assertTrue(result)
+
+        # Resume normal plotting after test
+        plt.ion()
 
 
 if __name__ == '__main__':
