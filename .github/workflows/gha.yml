@@ -2,6 +2,7 @@ name: Action
 
 on:
   push:
+  pull_request:
 
 jobs:
   lint-check:
