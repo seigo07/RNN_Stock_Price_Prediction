@@ -66,28 +66,40 @@ class TestLoadData(unittest.TestCase):
 
 class TestCleanData(unittest.TestCase):
 
+    # Setup method to create a mock dataset that will be used in the tests.
     def setUp(self):
+        # Create a mock dataset with some missing data and duplicate dates for testing.
         self.dataset = pd.DataFrame({
             'Open': [100, 101, 102, 103, 104],
             'Close': [101, 102, np.nan, 105, 110],
             'Volume': [1000, 1100, 1200, 1300, 1400]
         }, index=pd.to_datetime(['2021-01-01', '2021-01-02', '2021-01-03', '2021-01-03', '2021-01-05']))
 
+    # Test to check if the NaN values in the 'Close' column have been removed after cleaning.
     def test_remove_nan_values(self):
         cleaned_data, _ = clean_data(self.dataset)
+        # Ensure that there are no NaN values in the 'Close' column after cleaning.
         self.assertFalse(cleaned_data['Close'].isnull().any())
 
+    # Test to check if duplicate dates are removed after cleaning.
     def test_remove_duplicate_dates(self):
         cleaned_data, _ = clean_data(self.dataset)
+        # Assert that no dates are duplicated in the index after cleaning.
         self.assertEqual(cleaned_data.index.duplicated().sum(), 0)
 
+    # Test to ensure that 'Close' values are within a valid range after cleaning.
+    # Specifically, this checks if values are below the 99th percentile and non-negative.
     def test_clip_close_values(self):
         cleaned_data, _ = clean_data(self.dataset)
+        # Check if all 'Close' values are below or equal to the 99th percentile of the original 'Close' values.
         self.assertTrue((cleaned_data['Close'] <= np.percentile(self.dataset['Close'].dropna(), 99)).all())
+        # Check if all 'Close' values are non-negative.
         self.assertTrue((cleaned_data['Close'] >= 0).all())
 
+    # Test to check the shape of the reshaped 'Close' values to ensure they've been converted to 2D.
     def test_reshape_close_values(self):
         _, data = clean_data(self.dataset)
+        # Check if the shape of the cleaned 'Close' data is as expected (4 rows and 1 column).
         self.assertEqual(data.shape, (4, 1))
 
 
