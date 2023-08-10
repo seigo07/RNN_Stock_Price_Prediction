@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 import warnings
 import sys
 from io import StringIO
@@ -10,7 +11,7 @@ from datetime import datetime
 from unittest.mock import patch
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima, print_trading_result, print_trading_result_arima
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima, print_trading_result, print_trading_result_arima, plot_trading_result
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -462,6 +463,43 @@ class TestPrintTradingResultARIMA(unittest.TestCase):
         profit_or_loss = float(output[2].split(": $")[1])
         self.assertTrue(final_balance > 10000)
         self.assertTrue(profit_or_loss > 0)
+
+
+class TestPlotTradingResult(unittest.TestCase):
+
+    def setUp(self):
+        # Generate a dummy dataset
+        date_rng = pd.date_range(start='2020-01-01', end='2020-12-31', freq='D')
+        df = pd.DataFrame(date_rng, columns=['date'])
+        df['Close'] = np.linspace(10, 50, num=df.shape[0])  # Linearly increasing prices
+        df.set_index('date', inplace=True)
+        self.one_year_data = df
+
+        # Actual data in 2D
+        self.one_year_data_2d = df['Close'].values.reshape(-1, 1)
+
+        # Simulate ARIMA predictions that always expect an increase in prices
+        # Deduct sequence_length from the predictions length to match the x and y dimensions when plotting
+        sequence_length = 5
+        self.one_year_predictions = (df['Close'].values + 1)[sequence_length:]
+
+    @patch("matplotlib.pyplot.show")
+    def test_plot_trading_result(self, mock_show):
+        # Call the function
+        plot_trading_result('LSTM', 'AAPL', 5, self.one_year_data, self.one_year_data_2d, self.one_year_predictions)
+
+        # Check that show was called once (plot was generated)
+        mock_show.assert_called_once()
+
+        # Check if the title of the plot is correct
+        title = plt.gca().get_title()
+        self.assertEqual(title, 'AAPL Stock Price Predictions with Buy/Sell Points (Last One Year)')
+
+        # Check if the plot contains the right labels
+        labels = [t.get_text() for t in plt.gca().get_legend().get_texts()]
+        self.assertIn('Actual Stock Price', labels)
+        self.assertIn('LSTM Predicted Stock Price', labels)
+        self.assertIn('Buy', labels)  # because our predicted price is always higher
 
 
 if __name__ == '__main__':
