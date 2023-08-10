@@ -2,9 +2,10 @@ import unittest
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import warnings
 from unittest.mock import patch
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -170,6 +171,26 @@ class TestBuildModel(unittest.TestCase):
 
         # Check if the default layer is LSTM
         self.assertIsInstance(model.layers[0], LSTM)
+
+
+class TestTimeSeriesCrossValidation(unittest.TestCase):
+
+    def setUp(self):
+        # Suppress all warnings to ensure cleaner output
+        warnings.filterwarnings("ignore")
+        # Reshape the data array so it becomes 2D
+        self.data = np.arange(100).reshape(-1, 1)
+        self.n_splits = 5
+        self.model_order = (1, 0, 1)
+
+    def test_cross_validation_output(self):
+        result = time_series_cross_validation(self.data, self.n_splits, self.model_order)
+
+        # Check if the returned result is a float value for the Theil U statistic
+        self.assertIsInstance(result, float)
+
+        # Optionally, you can check the range of the result, since Theil U statistic is >= 0
+        self.assertGreaterEqual(result, 0)
 
 
 if __name__ == '__main__':
