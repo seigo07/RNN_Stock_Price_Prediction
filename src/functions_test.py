@@ -14,8 +14,8 @@ from sklearn.preprocessing import MinMaxScaler
 from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics, print_metrics_arima, get_one_year_data, get_one_year_data_arima, print_trading_result, print_trading_result_arima, plot_trading_result, plot_trading_result_arima
 from keras.layers import LSTM, GRU, Dense
 
-
-INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"  # Assuming you have a constant for this
+# Define error messages for invalid ticker
+INVALID_TICKER_ERROR = "Invalid ticker. Please enter a valid ticker"
 
 
 class MockModel:
@@ -29,26 +29,38 @@ class MockModel:
 
 class TestLoadData(unittest.TestCase):
 
-    # Test for a valid ticker
-    @patch('yfinance.download')
+    # Mocking the `yfinance.download` function allows us to test the `load_data` function
+    # without actually making a request to the Yahoo Finance API.
+
+    # Test to ensure that the function behaves correctly when provided with a valid ticker.
+    @patch('yfinance.download')  # We use patch to mock the yfinance.download function
     def test_load_data_valid_ticker(self, mock_download):
+        # Mock data to simulate the response we would get from Yahoo Finance for a valid ticker.
         mock_data = pd.DataFrame({
             'Open': [100, 101, 102],
             'Close': [101, 102, 103],
         })
+        # Here we specify the return value of the mocked function when it is called.
         mock_download.return_value = mock_data
 
+        # Now we call the actual `load_data` function we want to test.
         result = load_data("AAPL")
+
+        # We then check if the returned data from our `load_data` function matches the mocked data.
         self.assertEqual(len(result), 3)  # Check if we got the mocked data
 
-    # Test for an invalid ticker
-    @patch('yfinance.download')
+    # Test to ensure that the function behaves correctly when provided with an invalid ticker.
+    @patch('yfinance.download')  # Again, we mock the yfinance.download function
     def test_load_data_invalid_ticker(self, mock_download):
+        # This time, we simulate the scenario where an invalid ticker returns an empty DataFrame.
         mock_download.return_value = pd.DataFrame()
 
+        # We expect our function to raise a SystemExit exception for invalid tickers.
+        # Hence, we use `assertRaises` to check if this exception is indeed raised.
         with self.assertRaises(SystemExit) as cm:  # Since you are exiting for invalid tickers
             load_data("INVALID")
 
+        # Finally, we check if the exception code matches the expected error code for invalid tickers.
         self.assertEqual(cm.exception.code, INVALID_TICKER_ERROR)
 
 
