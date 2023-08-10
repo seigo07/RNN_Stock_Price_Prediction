@@ -105,39 +105,52 @@ class TestCleanData(unittest.TestCase):
 
 class TestSplitData(unittest.TestCase):
 
+    # Setup method to initialize a mock dataset that will be used in the tests.
     def setUp(self):
+        # Creating a simple dataset with 10 consecutive numbers for testing purposes.
         self.data = np.array([[100], [101], [102], [103], [104], [105], [106], [107], [108], [109]])
 
+    # Test to ensure the split ratio of the dataset into training and testing sets.
     def test_split_ratio(self):
         train_data, test_data, _ = split_data(self.data)
-        self.assertEqual(len(train_data), 8)  # 80% of 10
-        self.assertEqual(len(test_data), 2)   # 20% of 10
+        # Ensure that 80% of the data is used for training.
+        self.assertEqual(len(train_data), 8)
+        # Ensure that 20% of the data is used for testing.
+        self.assertEqual(len(test_data), 2)
 
+    # Test to check if the training and testing datasets are normalized properly.
     def test_normalization(self):
         train_data, test_data, _ = split_data(self.data)
+        # Ensure all training data values lie between 0 and 1 (inclusive).
         self.assertTrue((0 <= train_data).all() and (train_data <= 1).all())
 
-        # Instead of enforcing that test_data values should be between 0 and 1,
-        # check if they are correctly scaled based on the training data's range.
+        # Obtain min and max values of training and testing subsets for scaling checks.
         min_train = np.min(self.data[:8])
         max_train = np.max(self.data[:8])
         min_test = np.min(self.data[8:])
         max_test = np.max(self.data[8:])
 
-        self.assertAlmostEqual(train_data[0], 0, delta=1e-10)  # Train data minimum should be approximately 0
+        # Check if train data is correctly scaled.
+        self.assertAlmostEqual(train_data[0], 0, delta=1e-10)  # Scaled minimum value in training set.
         self.assertAlmostEqual(train_data[-1], (max_train - min_train) / (max_train - min_train),
-                               delta=1e-10)  # Last train data point scaled
-        self.assertAlmostEqual(test_data[0], (min_test - min_train) / (max_train - min_train),
-                               delta=1e-10)  # First test data point scaled
-        self.assertAlmostEqual(test_data[-1], (max_test - min_train) / (max_train - min_train),
-                               delta=1e-10)  # Last test data point scaled
+                               delta=1e-10)  # Scaled last value in training set.
 
+        # Check if test data is correctly scaled using the same scale as the training data.
+        self.assertAlmostEqual(test_data[0], (min_test - min_train) / (max_train - min_train),
+                               delta=1e-10)  # Scaled first value in testing set.
+        self.assertAlmostEqual(test_data[-1], (max_test - min_train) / (max_train - min_train),
+                               delta=1e-10)  # Scaled last value in testing set.
+
+    # Test to ensure the same scaler is used for both training and testing data.
     def test_using_same_scaler(self):
         _, _, scaler = split_data(self.data)
-        manual_test_data = scaler.transform(self.data[-2:])  # manually transform the last two data points
+        # Manually transform the last two data points using the returned scaler.
+        manual_test_data = scaler.transform(self.data[-2:])
         _, test_data, _ = split_data(self.data)
+        # Ensure the manual scaling result matches with the test data.
         self.assertTrue(np.array_equal(manual_test_data, test_data))
 
+    # Test to confirm the type of scaler returned by the function is MinMaxScaler.
     def test_return_scaler_type(self):
         _, _, scaler = split_data(self.data)
         self.assertIsInstance(scaler, MinMaxScaler)
