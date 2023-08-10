@@ -246,21 +246,25 @@ class TestBuildModel(unittest.TestCase):
 class TestTimeSeriesCrossValidation(unittest.TestCase):
 
     def setUp(self):
-        # Suppress all warnings to ensure cleaner output
+        # To make the output cleaner, we suppress all warnings that might arise during the testing process.
         warnings.filterwarnings("ignore")
 
-        # Reshape the data array so it becomes 2D
+        # Create a 2D data array with sequential numbers ranging from 0 to 99.
         self.data = np.arange(100).reshape(-1, 1)
+        # Number of splits for the cross-validation.
         self.n_splits = 5
+        # Define the order of the ARIMA model for the time series cross-validation.
         self.model_order = (1, 0, 1)
 
     def test_cross_validation_output(self):
+        # Call the time_series_cross_validation function with given data, number of splits, and model order.
         result = time_series_cross_validation(self.data, self.n_splits, self.model_order)
 
-        # Check if the returned result is a float value for the Theil U statistic
+        # Ensure that the output of the cross-validation function (i.e., the Theil U statistic) is a float.
         self.assertIsInstance(result, float)
 
-        # Optionally, you can check the range of the result, since Theil U statistic is >= 0
+        # The Theil U statistic is a measure of forecasting accuracy and is always non-negative.
+        # Here, we check if the computed value is indeed greater than or equal to 0.
         self.assertGreaterEqual(result, 0)
 
 
