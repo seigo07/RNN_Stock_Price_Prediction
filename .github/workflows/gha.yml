@@ -36,6 +36,9 @@ jobs:
       - name: Run linting on src/functions.py
         run: flake8 src/functions.py
 
+      - name: Run linting on src/functions_test.py
+        run: flake8 src/functions_test.py
+
   run-unittest:
     needs: lint-check
     runs-on: ubuntu-latest
