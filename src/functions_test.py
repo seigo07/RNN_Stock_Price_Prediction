@@ -370,29 +370,40 @@ class TestPrintMetrics(unittest.TestCase):
 class TestPrintMetricsArima(unittest.TestCase):
 
     def setUp(self):
+        # Store the original standard output in a class variable for later restoration
         self.original_stdout = sys.stdout
-        sys.stdout = StringIO()  # Redirect stdout
+
+        # Redirect the standard output to a string buffer (StringIO) so that we can capture printed values
+        sys.stdout = StringIO()
 
     def tearDown(self):
-        sys.stdout = self.original_stdout  # Restore stdout
+        # After each test, reset the standard output to its original state
+        sys.stdout = self.original_stdout
 
     def test_print_metrics_arima(self):
-        # Sample data, predictions, and Theil U value
+        # Define sample data. This includes the actual values and the ARIMA model predictions.
         data = np.array([2, 3, 5, 8, 12, 18, 27, 39])
-        train_size = 6
-        predictions = np.array([25, 36])
-        best_theil_u = 1.2  # Assume this value for the purpose of the test
+        train_size = 6  # Define the size of the training data
+        predictions = np.array([25, 36])  # Sample predictions from the ARIMA model
+        best_theil_u = 1.2  # A sample Theil U statistic value for the purpose of this test
 
+        # Call the function to print the evaluation metrics for ARIMA
         print_metrics_arima(data, train_size, predictions, best_theil_u)
 
+        # Capture the printed output from the redirected standard output and split by lines
         output = sys.stdout.getvalue().strip().split("\n")
 
-        # Check each of the printed outputs except MAPE
+        # Validate each printed metric against the expected values:
+        # Check Root Mean Squared Error (RMSE)
         self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(data[train_size:], predictions))}")
+        # Check Mean Absolute Error (MAE)
         self.assertEqual(output[1], f"MAE: {mean_absolute_error(data[train_size:], predictions)}")
+        # Check R-squared score
         self.assertEqual(output[2], f"R2: {r2_score(data[train_size:], predictions)}")
+        # Check Mean Absolute Percentage Error (MAPE). The precision is set to two decimal places.
         mape = mean_absolute_percentage_error(data[train_size:], predictions)
         self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
+        # Check and validate the printed Theil U statistic against the sample value.
         self.assertEqual(output[4], f"Theil U statistic : {best_theil_u:.2f}")
 
 
