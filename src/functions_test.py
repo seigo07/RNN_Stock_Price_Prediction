@@ -3,10 +3,12 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 import warnings
+import sys
+from io import StringIO
 from unittest.mock import patch
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import MinMaxScaler
-from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic
+from src.functions import load_data, clean_data, split_data, create_dataset, build_model, time_series_cross_validation, get_arima_predictions, theil_u_statistic, print_metrics
 from keras.layers import LSTM, GRU, Dense
 
 
@@ -247,6 +249,33 @@ class TestTheilUStatistic(unittest.TestCase):
 
         # Compare the computed Theil U statistic to the expected value
         self.assertAlmostEqual(computed_theil_u, expected_theil_u)
+
+
+class TestPrintMetrics(unittest.TestCase):
+
+    def setUp(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = StringIO()  # Redirect stdout
+
+    def tearDown(self):
+        sys.stdout = self.original_stdout  # Restore stdout
+
+    def test_print_metrics(self):
+        y_test = np.array([3, 2, 4, 5, 6])
+        predictions = np.array([2.8, 2.1, 3.9, 5.2, 6.1])
+        naive_predictions = np.array([3, 3, 2, 4, 5])
+
+        print_metrics(y_test, predictions, naive_predictions)
+
+        output = sys.stdout.getvalue().strip().split("\n")
+
+        # Check each of the printed outputs except MAPE
+        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(y_test, predictions))}")
+        self.assertEqual(output[1], f"MAE: {mean_absolute_error(y_test, predictions)}")
+        self.assertEqual(output[2], f"R2: {r2_score(y_test, predictions)}")
+        mape = mean_absolute_percentage_error(y_test, predictions)
+        self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
+        self.assertEqual(output[4], f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.2f}")
 
 
 if __name__ == '__main__':
