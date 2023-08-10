@@ -158,30 +158,41 @@ class TestSplitData(unittest.TestCase):
 
 class TestCreateDataset(unittest.TestCase):
 
+    # Setup method to initialize a mock dataset that will be used in the tests.
     def setUp(self):
+        # Creating a simple dataset with 10 consecutive numbers for testing purposes.
         self.data = np.array([[100], [101], [102], [103], [104], [105], [106], [107], [108], [109]])
 
+    # Test to ensure the created dataset (X and Y) have the correct lengths.
     def test_dataset_length(self):
         time_steps = 3
         data_X, data_Y = create_dataset(self.data, time_steps)
 
+        # After creating sequences of 'time_steps' length, the expected remaining data points will be:
+        # total_data_points - time_steps
         expected_length = len(self.data) - time_steps
         self.assertEqual(len(data_X), expected_length)
         self.assertEqual(len(data_Y), expected_length)
 
+    # Test to verify if each sequence in the dataset X has the specified 'time_steps' length.
     def test_sequence_length(self):
         time_steps = 3
         data_X, _ = create_dataset(self.data, time_steps)
 
+        # Ensure each sequence in the dataset X has the correct length.
         for sequence in data_X:
             self.assertEqual(len(sequence), time_steps)
 
+    # Test to ensure that the sequences in dataset X and the corresponding target values in Y are correct.
     def test_correct_sequence_values(self):
         time_steps = 3
         data_X, data_Y = create_dataset(self.data, time_steps)
 
+        # Verify each sequence in dataset X and the corresponding target value in Y.
         for i in range(len(data_X)):
+            # Ensure the current sequence in dataset X matches the corresponding values from the original data.
             np.testing.assert_array_equal(data_X[i], self.data[i:i + time_steps].flatten())
+            # Verify that the target value for the current sequence matches the expected value from the original data.
             self.assertEqual(data_Y[i], self.data[i + time_steps][0])
 
 
