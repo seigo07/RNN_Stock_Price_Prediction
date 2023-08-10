@@ -330,28 +330,41 @@ class TestTheilUStatistic(unittest.TestCase):
 class TestPrintMetrics(unittest.TestCase):
 
     def setUp(self):
+        # Save the original standard output to a class variable
         self.original_stdout = sys.stdout
-        sys.stdout = StringIO()  # Redirect stdout
+
+        # Redirect the standard output to a string buffer (StringIO) to capture the printed outputs
+        sys.stdout = StringIO()
 
     def tearDown(self):
-        sys.stdout = self.original_stdout  # Restore stdout
+        # After the test, restore the original standard output
+        sys.stdout = self.original_stdout
 
     def test_print_metrics(self):
+        # Define mock data for the test: actual values, predicted values, and naive forecast.
         y_test = np.array([3, 2, 4, 5, 6])
         predictions = np.array([2.8, 2.1, 3.9, 5.2, 6.1])
         naive_predictions = np.array([3, 3, 2, 4, 5])
 
+        # Call the function to print the metrics
         print_metrics(y_test, predictions, naive_predictions)
 
+        # Capture the output printed by the function from the redirected standard output
         output = sys.stdout.getvalue().strip().split("\n")
 
-        # Check each of the printed outputs except MAPE
+        # Validate each of the printed outputs:
+        # Check Root Mean Squared Error (RMSE)
         self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(y_test, predictions))}")
+        # Check Mean Absolute Error (MAE)
         self.assertEqual(output[1], f"MAE: {mean_absolute_error(y_test, predictions)}")
+        # Check R-squared score
         self.assertEqual(output[2], f"R2: {r2_score(y_test, predictions)}")
+        # Check Mean Absolute Percentage Error (MAPE). The precision is set to two decimal places.
         mape = mean_absolute_percentage_error(y_test, predictions)
         self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
-        self.assertEqual(output[4], f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.2f}")
+        # Check Theil U statistic. The precision is set to two decimal places.
+        self.assertEqual(output[4],
+                         f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.2f}")
 
 
 class TestPrintMetricsArima(unittest.TestCase):
