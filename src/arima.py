@@ -12,6 +12,7 @@ from functions import *
 
 # Define error messages for invalid arguments
 INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
+
 # Define the number of expected arguments (script name + 2 arguments)
 ARGV_NUMBER = 2
 
