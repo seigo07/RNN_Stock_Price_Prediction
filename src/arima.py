@@ -17,12 +17,15 @@ INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
 # Define the number of expected arguments (script name + 2 arguments)
 ARGV_NUMBER = 2
 
+# Set the default algorithm for stock prediction
+ALGORITHM = "ARIMA"
+
+# Set a consistent seed value to ensure reproducibility across different runs
+SEED_VALUE = 42
+
 # Check if the number of arguments provided is correct
 if len(sys.argv) != ARGV_NUMBER:
     exit(INVALID_ARGS_NUMBER_ERROR)
-
-# Set the default algorithm for stock prediction
-algorithm = "ARIMA"
 
 # Get the ticker symbol from command-line arguments
 ticker = sys.argv[1]
@@ -30,8 +33,6 @@ ticker = sys.argv[1]
 # Suppress all warnings for cleaner output
 warnings.simplefilter("ignore")
 
-# Set a consistent seed value to ensure reproducibility across different runs
-SEED_VALUE = 42
 np.random.seed(SEED_VALUE)        # Set seed for numpy operations
 random.seed(SEED_VALUE)           # Set seed for Python's built-in random module
 tf.random.set_seed(SEED_VALUE)    # Set seed for TensorFlow operations
@@ -68,7 +69,7 @@ one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_yea
 print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
 
 # Visualize the trading results for a more intuitive understanding of performance
-plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions)
+plot_trading_result_arima(ALGORITHM, ticker, one_year_data, one_year_2d, one_year_predictions)
 
 
 # In[ ]:
