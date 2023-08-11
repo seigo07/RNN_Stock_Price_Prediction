@@ -11,64 +11,71 @@ import tensorflow as tf
 from functions import load_data, clean_data, split_data, get_best_params_arima, get_arima_predictions, print_metrics_arima, get_one_year_data_arima, print_trading_result_arima, plot_trading_result_arima
 import numpy as np
 
-# Define error messages for invalid arguments
-INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
 
-# Define the number of expected arguments (script name + 2 arguments)
-ARGV_NUMBER = 2
+def main():
 
-# Check if the number of arguments provided is correct
-if len(sys.argv) != ARGV_NUMBER:
-    exit(INVALID_ARGS_NUMBER_ERROR)
+    # Define error messages for invalid arguments
+    INVALID_ARGS_NUMBER_ERROR = "Usage: python src/arima.py <TICKER>"
 
-# Set the default algorithm for stock prediction
-algorithm = "ARIMA"
+    # Define the number of expected arguments (script name + 2 arguments)
+    ARGV_NUMBER = 2
 
-# Get the ticker symbol from command-line arguments
-ticker = sys.argv[1]
+    # Set the default algorithm for stock prediction
+    ALGORITHM = "ARIMA"
 
-# Suppress all warnings for cleaner output
-warnings.simplefilter("ignore")
+    # Set a consistent seed value to ensure reproducibility across different runs
+    SEED_VALUE = 42
 
-# Set a consistent seed value to ensure reproducibility across different runs
-SEED_VALUE = 42
-np.random.seed(SEED_VALUE)        # Set seed for numpy operations
-random.seed(SEED_VALUE)           # Set seed for Python's built-in random module
-tf.random.set_seed(SEED_VALUE)    # Set seed for TensorFlow operations
+    # Check if the number of arguments provided is correct
+    if len(sys.argv) != ARGV_NUMBER:
+        exit(INVALID_ARGS_NUMBER_ERROR)
 
-# Load the dataset corresponding to the specified stock ticker
-dataset = load_data(ticker)
+    # Get the ticker symbol from command-line arguments
+    ticker = sys.argv[1]
 
-# Process and clean the dataset to prepare it for analysis
-dataset, data = clean_data(dataset)
+    # Suppress all warnings for cleaner output
+    warnings.simplefilter("ignore")
 
-# Determine the size of the training dataset, assuming it's 80% of the total data
-train_size = int(len(data) * 0.8)
+    np.random.seed(SEED_VALUE)        # Set seed for numpy operations
+    random.seed(SEED_VALUE)           # Set seed for Python's built-in random module
+    tf.random.set_seed(SEED_VALUE)    # Set seed for TensorFlow operations
 
-# Split the data into training and test sets, and retrieve a scaler for data normalization
-train_data, test_data, scaler = split_data(data)
+    # Load the dataset corresponding to the specified stock ticker
+    dataset = load_data(ticker)
 
-# Reshape the training and test data to be 2-dimensional, as required by some libraries or functions
-train_data_2d = train_data.reshape(-1, 1)
-test_data_2d = test_data.reshape(-1, 1)
+    # Process and clean the dataset to prepare it for analysis
+    dataset, data = clean_data(dataset)
 
-# Find the best ARIMA parameters (p, d, q) for the dataset
-best_theil_u, best_p, best_d, best_q = get_best_params_arima(data)
+    # Determine the size of the training dataset, assuming it's 80% of the total data
+    train_size = int(len(data) * 0.8)
 
-# Use the best ARIMA parameters to forecast on the test set
-predictions = get_arima_predictions(scaler, train_data_2d, test_data_2d, best_p, best_d, best_q)
+    # Split the data into training and test sets, and retrieve a scaler for data normalization
+    train_data, test_data, scaler = split_data(data)
 
-# Evaluate the model's performance using various metrics
-print_metrics_arima(data, train_size, predictions, best_theil_u)
+    # Reshape the training and test data to be 2-dimensional, as required by some libraries or functions
+    train_data_2d = train_data.reshape(-1, 1)
+    test_data_2d = test_data.reshape(-1, 1)
 
-# Retrieve data and predictions for a duration of one year
-one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_year_data_arima(dataset, scaler, train_data_2d)
+    # Find the best ARIMA parameters (p, d, q) for the dataset
+    best_theil_u, best_p, best_d, best_q = get_best_params_arima(data)
 
-# Calculate and display the trading outcomes based on the one-year predictions
-print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
+    # Use the best ARIMA parameters to forecast on the test set
+    predictions = get_arima_predictions(scaler, train_data_2d, test_data_2d, best_p, best_d, best_q)
 
-# Visualize the trading results for a more intuitive understanding of performance
-plot_trading_result_arima(algorithm, ticker, one_year_data, one_year_2d, one_year_predictions)
+    # Evaluate the model's performance using various metrics
+    print_metrics_arima(data, train_size, predictions, best_theil_u)
 
+    # Retrieve data and predictions for a duration of one year
+    one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_year_data_arima(dataset, scaler, train_data_2d)
+
+    # Calculate and display the trading outcomes based on the one-year predictions
+    print_trading_result_arima(one_year_data, one_year_2d, one_year_predictions)
+
+    # Visualize the trading results for a more intuitive understanding of performance
+    plot_trading_result_arima(ALGORITHM, ticker, one_year_data, one_year_2d, one_year_predictions)
+
+
+if __name__ == "__main__":
+    main()
 
 # In[ ]:
