@@ -444,11 +444,11 @@ def print_metrics(y_test, predictions, naive_predictions):
     theil_u = theil_u_statistic(y_test, predictions, naive_predictions)
 
     # Display the metrics.
-    print(f"RMSE: {rmse}")
-    print(f"MAE: {mae}")
-    print(f"R2: {r2}")
-    print(f"MAPE: {mape:.2f}%")
-    print(f"Theil U statistic : {theil_u:.2f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"MAE: {mae:.4f}")
+    print(f"R2: {r2:.4f}")
+    print(f"MAPE: {mape:.4f}%")
+    print(f"Theil U statistic : {theil_u:.4f}")
 
 
 def print_metrics_arima(data, train_size, predictions, best_theil_u):
@@ -469,11 +469,11 @@ def print_metrics_arima(data, train_size, predictions, best_theil_u):
     mape = mean_absolute_percentage_error(data[train_size:], predictions)
 
     # Display the metrics.
-    print(f"RMSE: {rmse}")
-    print(f"MAE: {mae}")
-    print(f"R2: {r2}")
-    print(f"MAPE: {mape:.2f}%")
-    print(f"Theil U statistic : {best_theil_u:.2f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"MAE: {mae:.4f}")
+    print(f"R2: {r2:.4f}")
+    print(f"MAPE: {mape:.4f}%")
+    print(f"Theil U statistic : {best_theil_u:.4f}")
 
 
 def get_one_year_data(dataset, sequence_length, scaler, model):
