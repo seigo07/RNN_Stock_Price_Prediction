@@ -347,7 +347,7 @@ class TestPrintMetrics(unittest.TestCase):
         naive_predictions = np.array([3, 3, 2, 4, 5])
 
         # Call the function to print the metrics
-        print_metrics(y_test, predictions, naive_predictions)
+        print_metrics(y_test, predictions, naive_predictions, None)
 
         # Capture the output printed by the function from the redirected standard output
         output = sys.stdout.getvalue().strip().split("\n")
@@ -387,8 +387,12 @@ class TestPrintMetricsArima(unittest.TestCase):
         predictions = np.array([25, 36])  # Sample predictions from the ARIMA model
         best_theil_u = 1.2  # A sample Theil U statistic value for the purpose of this test
 
+        best_p = 1
+        best_d = 1
+        best_q = 1
+
         # Call the function to print the evaluation metrics for ARIMA
-        print_metrics_arima(data, train_size, predictions, best_theil_u)
+        print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, best_d, best_q)
 
         # Capture the printed output from the redirected standard output and split by lines
         output = sys.stdout.getvalue().strip().split("\n")
