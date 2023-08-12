@@ -4,7 +4,8 @@ RNN Stock Price Prediction.
 
 ## Description
 
-This is the regression system that can accurately predict the future stock prices using several models: LSTM, GRU, and ARIMA.
+This program is a time-series forecasting model that predicts future stock price movements from stock price trading information for a specific period of time for selected companies.
+Traditional and new regression algorithms LSTM, GRU, and ARIMA were selected for comparison and evaluation of model and profitability performance.
 Specify the stock price of your favourite stock, train the model using about three years of data, and output trading results for one year.
 
 ## Getting Started
