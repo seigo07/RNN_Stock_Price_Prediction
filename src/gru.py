@@ -74,7 +74,7 @@ def main():
     naive_predictions = np.full_like(y_test, y_train[-1])
 
     # Evaluate and print the model's performance metrics compared to naive predictions
-    print_metrics(y_test, predictions, naive_predictions)
+    print_metrics(y_test, predictions, naive_predictions, best_params)
 
     # Get data and predictions for a duration of one year using the trained model
     one_year_data, one_year_data_2d, one_year_predictions = get_one_year_data(dataset, SEQUENCE_LENGTH, scaler, model)

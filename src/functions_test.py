@@ -347,24 +347,24 @@ class TestPrintMetrics(unittest.TestCase):
         naive_predictions = np.array([3, 3, 2, 4, 5])
 
         # Call the function to print the metrics
-        print_metrics(y_test, predictions, naive_predictions)
+        print_metrics(y_test, predictions, naive_predictions, None)
 
         # Capture the output printed by the function from the redirected standard output
         output = sys.stdout.getvalue().strip().split("\n")
 
         # Validate each of the printed outputs:
         # Check Root Mean Squared Error (RMSE)
-        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(y_test, predictions))}")
+        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(y_test, predictions)):.4f}")
         # Check Mean Absolute Error (MAE)
-        self.assertEqual(output[1], f"MAE: {mean_absolute_error(y_test, predictions)}")
+        self.assertEqual(output[1], f"MAE: {mean_absolute_error(y_test, predictions):.4f}")
         # Check R-squared score
-        self.assertEqual(output[2], f"R2: {r2_score(y_test, predictions)}")
+        self.assertEqual(output[2], f"R2: {r2_score(y_test, predictions):.4f}")
         # Check Mean Absolute Percentage Error (MAPE). The precision is set to two decimal places.
         mape = mean_absolute_percentage_error(y_test, predictions)
-        self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
+        self.assertEqual(output[3], f"MAPE: {mape:.4f}%")
         # Check Theil U statistic. The precision is set to two decimal places.
         self.assertEqual(output[4],
-                         f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.2f}")
+                         f"Theil U statistic : {theil_u_statistic(y_test, predictions, naive_predictions):.4f}")
 
 
 class TestPrintMetricsArima(unittest.TestCase):
@@ -387,24 +387,28 @@ class TestPrintMetricsArima(unittest.TestCase):
         predictions = np.array([25, 36])  # Sample predictions from the ARIMA model
         best_theil_u = 1.2  # A sample Theil U statistic value for the purpose of this test
 
+        best_p = 1
+        best_d = 1
+        best_q = 1
+
         # Call the function to print the evaluation metrics for ARIMA
-        print_metrics_arima(data, train_size, predictions, best_theil_u)
+        print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, best_d, best_q)
 
         # Capture the printed output from the redirected standard output and split by lines
         output = sys.stdout.getvalue().strip().split("\n")
 
         # Validate each printed metric against the expected values:
         # Check Root Mean Squared Error (RMSE)
-        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(data[train_size:], predictions))}")
+        self.assertEqual(output[0], f"RMSE: {np.sqrt(mean_squared_error(data[train_size:], predictions)):.4f}")
         # Check Mean Absolute Error (MAE)
-        self.assertEqual(output[1], f"MAE: {mean_absolute_error(data[train_size:], predictions)}")
+        self.assertEqual(output[1], f"MAE: {mean_absolute_error(data[train_size:], predictions):.4f}")
         # Check R-squared score
-        self.assertEqual(output[2], f"R2: {r2_score(data[train_size:], predictions)}")
+        self.assertEqual(output[2], f"R2: {r2_score(data[train_size:], predictions):.4f}")
         # Check Mean Absolute Percentage Error (MAPE). The precision is set to two decimal places.
         mape = mean_absolute_percentage_error(data[train_size:], predictions)
-        self.assertEqual(output[3], f"MAPE: {mape:.2f}%")
+        self.assertEqual(output[3], f"MAPE: {mape:.4f}%")
         # Check and validate the printed Theil U statistic against the sample value.
-        self.assertEqual(output[4], f"Theil U statistic : {best_theil_u:.2f}")
+        self.assertEqual(output[4], f"Theil U statistic : {best_theil_u:.4f}")
 
 
 class TestGetOneYearData(unittest.TestCase):

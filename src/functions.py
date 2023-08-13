@@ -307,10 +307,6 @@ def get_best_params(algorithm, tf, sequence_length, scaler, X_train, y_train):
             best_rmse = avg_rmse
             best_params = params
 
-    # Print the best hyperparameters.
-    print("Best hyperparameters:")
-    print(best_params)
-
     return best_params
 
 
@@ -348,9 +344,6 @@ def get_best_params_arima(data):
         if theil_u_score < best_theil_u:
             best_theil_u = theil_u_score
             best_p, best_d, best_q = p, d, q
-
-    # Print the best hyperparameters.
-    print(f"Best Parameters: p={best_p}, d={best_d}, q={best_q}")
 
     return best_theil_u, best_p, best_d, best_q
 
@@ -426,7 +419,7 @@ def theil_u_statistic(actual, predicted, naive):
     return theil_u
 
 
-def print_metrics(y_test, predictions, naive_predictions):
+def print_metrics(y_test, predictions, naive_predictions, best_params):
     """
     Print various evaluation metrics for model performance.
 
@@ -444,14 +437,18 @@ def print_metrics(y_test, predictions, naive_predictions):
     theil_u = theil_u_statistic(y_test, predictions, naive_predictions)
 
     # Display the metrics.
-    print(f"RMSE: {rmse}")
-    print(f"MAE: {mae}")
-    print(f"R2: {r2}")
-    print(f"MAPE: {mape:.2f}%")
-    print(f"Theil U statistic : {theil_u:.2f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"MAE: {mae:.4f}")
+    print(f"R2: {r2:.4f}")
+    print(f"MAPE: {mape:.4f}%")
+    print(f"Theil U statistic : {theil_u:.4f}")
+
+    # Print the best hyperparameters.
+    print("Best hyperparameters:")
+    print(best_params)
 
 
-def print_metrics_arima(data, train_size, predictions, best_theil_u):
+def print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, best_d, best_q):
     """
     Print evaluation metrics specifically for ARIMA model performance.
 
@@ -469,11 +466,14 @@ def print_metrics_arima(data, train_size, predictions, best_theil_u):
     mape = mean_absolute_percentage_error(data[train_size:], predictions)
 
     # Display the metrics.
-    print(f"RMSE: {rmse}")
-    print(f"MAE: {mae}")
-    print(f"R2: {r2}")
-    print(f"MAPE: {mape:.2f}%")
-    print(f"Theil U statistic : {best_theil_u:.2f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"MAE: {mae:.4f}")
+    print(f"R2: {r2:.4f}")
+    print(f"MAPE: {mape:.4f}%")
+    print(f"Theil U statistic : {best_theil_u:.4f}")
+
+    # Print the best hyperparameters.
+    print(f"Best Parameters: p={best_p}, d={best_d}, q={best_q}")
 
 
 def get_one_year_data(dataset, sequence_length, scaler, model):
