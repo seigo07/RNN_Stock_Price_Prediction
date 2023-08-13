@@ -178,7 +178,7 @@ def build_model(algorithm, sequence_length, tf, lr, initializer='he_normal', los
 
 def time_series_cross_validation(data, n_splits, model_order):
     """
-    Performs time series cross-validation on the data using the ARIMA model and calculates the average Theil U statistic.
+    Performs time series cross-validation on the data using the ARIMA model and calculates the average RMSE.
 
     Parameters:
     - data (array): The time series data to be processed.
@@ -186,14 +186,14 @@ def time_series_cross_validation(data, n_splits, model_order):
     - model_order (tuple): The parameters (p,d,q) of the ARIMA model.
 
     Returns:
-    - float: The average Theil U statistic across all splits.
+    - float: The average RMSE across all splits.
     """
 
     # Initialize TimeSeriesSplit object with the given number of splits.
     tscv = TimeSeriesSplit(n_splits=n_splits)
 
-    # List to store Theil U statistic scores for each split.
-    theil_u_scores = []
+    # List to store RMSE scores for each split.
+    rmse_scores = []
 
     # Iterate over each train/test split.
     for train_index, test_index in tscv.split(data):
@@ -204,40 +204,30 @@ def time_series_cross_validation(data, n_splits, model_order):
 
         # Initialize and fit the MinMaxScaler to the training data and apply it to both train and test data.
         scaler = MinMaxScaler(feature_range=(0, 1))
-        train_data = scaler.fit_transform(train_data)
-        test_data = scaler.transform(test_data)
-
-        # Reshape train and test data into two-dimensional arrays.
-        train_data_2d = train_data.reshape(-1, 1)
-        test_data_2d = test_data.reshape(-1, 1)
+        train_data = scaler.fit_transform(train_data.reshape(-1, 1))
+        test_data = scaler.transform(test_data.reshape(-1, 1))
 
         # Use the training data to create a history list for the ARIMA model.
-        history = [x for x in train_data_2d]
+        history = [x[0] for x in train_data]
         predictions = []
 
         # For each data point in the test set, fit the ARIMA model using the history and make a prediction.
-        for t in range(len(test_data_2d)):
+        for t in range(len(test_data)):
             model = ARIMA(history, order=model_order)
             model_fit = model.fit()
             output = model_fit.forecast(steps=1)
             yhat = output[0]
-
-            # Add the prediction to the predictions list.
             predictions.append(yhat)
-
-            # Add the actual observed value to the history for the next iteration.
-            obs = test_data_2d[t]
+            obs = test_data[t][0]
             history.append(obs)
 
-        # Create naive forecasts (using the last value of the training data) for Theil U statistic calculation.
-        naive_predictions = np.full_like(test_data_2d, train_data_2d[-1])
+        # Calculate RMSE for the predictions and add to the list of scores.
+        mse = np.mean((test_data[:,0] - predictions) ** 2)
+        rmse = np.sqrt(mse)
+        rmse_scores.append(rmse)
 
-        # Calculate Theil U statistic for the predictions and add to the list of scores.
-        theil_u = theil_u_statistic(test_data_2d, predictions, naive_predictions)
-        theil_u_scores.append(theil_u)
-
-    # Return the average of all Theil U statistic scores.
-    return np.mean(theil_u_scores)
+    # Return the average of all RMSE scores.
+    return np.mean(rmse_scores)
 
 
 def get_best_params(algorithm, tf, sequence_length, scaler, X_train, y_train):
@@ -318,7 +308,7 @@ def get_best_params_arima(data):
     - data (array): Time series data for ARIMA modeling.
 
     Returns:
-    - float: Best Theil's U statistic score.
+    - float: Best RMSE score.
     - int: Best order parameter p.
     - int: Best order parameter d.
     - int: Best order parameter q.
@@ -331,21 +321,21 @@ def get_best_params_arima(data):
         'q': range(0, 2)  # Possible values for MA order.
     }
 
-    # Initialize the best Theil's U statistic as infinite (to be minimized).
-    best_theil_u = float('inf')
+    # Initialize the best RMSE as infinite (to be minimized).
+    best_rmse = float('inf')
 
     # Iterate over all combinations of p, d, and q.
     for p, d, q in product(param_grid['p'], param_grid['d'], param_grid['q']):
         model_order = (p, d, q)
         # Evaluate the ARIMA model with the current parameters using cross-validation.
-        theil_u_score = time_series_cross_validation(data, n_splits=5, model_order=model_order)
+        rmse_score = time_series_cross_validation(data, n_splits=5, model_order=model_order)
 
         # Update the best parameters if current combination is better.
-        if theil_u_score < best_theil_u:
-            best_theil_u = theil_u_score
+        if rmse_score < best_rmse:
+            best_rmse = rmse_score
             best_p, best_d, best_q = p, d, q
 
-    return best_theil_u, best_p, best_d, best_q
+    return best_p, best_d, best_q
 
 
 def get_arima_predictions(scaler, train_data_2d, test_data_2d, best_p, best_d, best_q):
@@ -419,6 +409,23 @@ def theil_u_statistic(actual, predicted, naive):
     return theil_u
 
 
+def theil_u_statistic_arima(actual, predicted):
+    """
+    Calculate Theil U statistic.
+
+    Parameters:
+    - y_true (array): Actual values.
+    - y_pred (array): Forecasted values.
+
+    Returns:
+    - float: Theil U statistic.
+    """
+    n = len(actual)
+    num = np.sqrt(np.mean(((predicted - actual) / actual) ** 2))
+    denom = np.sqrt(np.mean(predicted ** 2) + np.mean(actual ** 2))
+    return num / denom
+
+
 def print_metrics(y_test, predictions, naive_predictions, best_params):
     """
     Print various evaluation metrics for model performance.
@@ -448,7 +455,7 @@ def print_metrics(y_test, predictions, naive_predictions, best_params):
     print(best_params)
 
 
-def print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, best_d, best_q):
+def print_metrics_arima(data, train_size, predictions, best_p, best_d, best_q):
     """
     Print evaluation metrics specifically for ARIMA model performance.
 
@@ -464,13 +471,14 @@ def print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, bes
     mae = mean_absolute_error(data[train_size:], predictions)
     r2 = r2_score(data[train_size:], predictions)
     mape = mean_absolute_percentage_error(data[train_size:], predictions)
+    theil_u = theil_u_statistic(data[train_size:], predictions)
 
     # Display the metrics.
     print(f"RMSE: {rmse:.4f}")
     print(f"MAE: {mae:.4f}")
     print(f"R2: {r2:.4f}")
     print(f"MAPE: {mape:.4f}%")
-    print(f"Theil U statistic : {best_theil_u:.4f}")
+    print(f"Theil U statistic : {theil_u:.4f}")
 
     # Print the best hyperparameters.
     print(f"Best Parameters: p={best_p}, d={best_d}, q={best_q}")

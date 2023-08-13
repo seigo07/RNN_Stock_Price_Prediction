@@ -57,13 +57,13 @@ def main():
     test_data_2d = test_data.reshape(-1, 1)
 
     # Find the best ARIMA parameters (p, d, q) for the dataset
-    best_theil_u, best_p, best_d, best_q = get_best_params_arima(data)
+    best_p, best_d, best_q = get_best_params_arima(data)
 
     # Use the best ARIMA parameters to forecast on the test set
     predictions = get_arima_predictions(scaler, train_data_2d, test_data_2d, best_p, best_d, best_q)
 
     # Evaluate the model's performance using various metrics
-    print_metrics_arima(data, train_size, predictions, best_theil_u, best_p, best_d, best_q)
+    print_metrics_arima(data, train_size, predictions, best_p, best_d, best_q)
 
     # Retrieve data and predictions for a duration of one year
     one_year_data, one_year_data_2d, one_year_2d, one_year_predictions = get_one_year_data_arima(dataset, scaler, train_data_2d)
