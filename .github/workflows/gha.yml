@@ -1,0 +1,60 @@
+name: Action
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Get Python version
+        run: python -V
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting on src/lstm.py
+        run: flake8 src/lstm.py
+
+      - name: Run linting on src/gru.py
+        run: flake8 src/gru.py
+
+      - name: Run linting on src/arima.py
+        run: flake8 src/arima.py
+
+      - name: Run linting on src/functions.py
+        run: flake8 src/functions.py
+
+      - name: Run linting on src/functions_test.py
+        run: flake8 src/functions_test.py
+
+  run-unittest:
+    needs: lint-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unittest on src/functions_test.py
+        run: python -m unittest src/functions_test.py
